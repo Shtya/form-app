@@ -1,0 +1,85 @@
+@import url('https://fonts.googleapis.com/css?family=Cairo:200,300,regular,500,600,700,800,900');
+@import 'tailwindcss';
+
+:root {
+  --background: #ffffff;
+  --foreground: #171717;
+}
+
+body {
+  color: black;
+}
+
+[dir="ltr"]{
+  font-family: var(--font-open-sans) !important;
+}
+
+[dir="rtl"] {
+  font-family: var(--font-noto-sans-arabic), 'Tahoma', sans-serif !important;
+}
+
+/* styles.css أو ملفك العام */
+.input {
+  display: block;
+  width: 100%;
+  padding: 0.75rem 0.75rem 0.75rem 2.5rem; /* py-3 pl-10 pr-3 */
+  border-radius: 0.5rem; /* rounded-lg */
+  font-size: 0.875rem; /* sm:text-sm */
+  color: #111827; /* text-gray-900 */
+  background-color: white;
+  border: 1px solid #d1d5db; /* border-gray-300 */
+  box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05); /* shadow-sm */
+  outline: none;
+}
+
+.input::placeholder {
+  color: #9ca3af; /* placeholder-gray-400 */
+}
+
+.input:focus {
+  border-color: #6366f1; /* focus:border-indigo-500 */
+  box-shadow: 0 0 0 1px #6366f1; /* focus:ring-indigo-500 */
+}
+
+.input-error {
+  border-color: #fca5a5 !important; /* border-red-300 */
+  box-shadow: 0 0 0 1px #ef4444 !important; /* focus:ring-red-500 */
+}
+
+.gradient {
+  @apply bg-gradient-to-br from-blue-100 via-white to-slate-900;
+}
+
+.gradient-opacity {
+  background: linear-gradient(to bottom right, rgba(147, 197, 253, 0.6), rgba(255, 255, 255, 0.4), rgba(15, 23, 42, 0.9));
+  @apply backdrop-blur-lg;
+}
+
+
+/* scrollbars.css أو داخل globals.css */
+
+.scrollbar-custom {
+  scrollbar-width: thin; /* للفايرفوكس */
+  scrollbar-color: #c7d2fe #f3f4f6; /* لون المقبض والمسار */
+}
+
+.scrollbar-custom::-webkit-scrollbar {
+  height: 8px;
+  width: 8px;
+}
+
+.scrollbar-custom::-webkit-scrollbar-track {
+  background: #f3f4f6; /* رمادي فاتح */
+  border-radius: 100vh;
+}
+
+.scrollbar-custom::-webkit-scrollbar-thumb {
+  background-color: #6366f1; /* لون المقبض (indigo-500) */
+  border-radius: 100vh;
+  border: 2px solid #f3f4f6; /* يجعل المقبض أنيقًا مع الفراغ */
+}
+
+.scrollbar-custom::-webkit-scrollbar-thumb:hover {
+  background-color: #4f46e5; /* indigo-600 */
+}
+
