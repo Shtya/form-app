@@ -109,7 +109,7 @@ export default function FormSubmissionPage() {
   const [currentFieldKey, setCurrentFieldKey] = useState('');
   const [activeTab, setActiveTab] = useState('form');
   const [gridView, setGridView] = useState(2);
-  const [language, setLanguage] = useState('en');
+  const [language, setLanguage] = useState('ar');
 
   // Set language from localStorage on initial load
   useEffect(() => {

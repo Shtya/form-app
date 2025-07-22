@@ -4,7 +4,7 @@ import { useAuth } from '../../context/AuthContext';
 import api, { baseImg } from '../../utils/api';
 import { DragDropContext, Droppable, Draggable } from '@hello-pangea/dnd';
 import { FiTrash2, FiEdit2, FiPlus, FiCheck, FiEye, FiUser, FiFileText, FiList, FiDownload, FiChevronLeft, FiChevronRight, FiEdit3, FiCircle, FiMaximize, FiShare2, FiEyeOff } from 'react-icons/fi';
-import { FaAsterisk, FaGripVertical, FaUser } from 'react-icons/fa6';
+import { FaAsterisk, FaEye, FaGripVertical, FaUser } from 'react-icons/fa6';
 import * as XLSX from 'xlsx';
 import { useForm } from 'react-hook-form';
 import * as yup from 'yup';
@@ -14,14 +14,75 @@ import Modal from '../../components/atoms/Modal';
 import { LanguageToggle } from '../../components/atoms/SwitchLang';
 import { LogoutButton } from '../../components/atoms/LogoutButton';
 import { DynamicImage } from '../../utils/DynamicImg';
+import { HiEyeOff } from 'react-icons/hi';
+import ProjectsTab from '../../components/atoms/ProjectsTab';
 
 // Translation objects
 const translations = {
   en: {
+    projects: 'Projects',
+    projectName: 'Project Name',
+    createNewForm: 'Create New Project',
+    create: 'Create',
+    edit: 'Edit',
+    delete: 'Delete',
+    usersInProject: 'Users in Project',
+    noUsersFound: 'No users found',
+    selectProjectToViewUsers: 'Select a project to view its users',
+    status: 'Status',
+    submissionDate: 'Submission Date',
+    actions: 'Actions',
+    view: 'View',
+    reviewed: 'Reviewed',
+    pending: 'Pending',
+    submissionDetails: 'Submission Details',
+    submittedOn: 'Submitted on',
+    markAsReviewed: 'Mark as Reviewed',
+    markAsPending: 'Mark as Pending',
+    updatingSubmission: 'Error updating submission',
+    loadingProjects: 'Error loading projects',
+    loadingUsers: 'Error loading users',
+    deletingProject: 'Error deleting project',
+    renamingProject: 'Error renaming project',
+    creatingProject: 'Error creating project',
+    projectDeleted: 'Project deleted successfully',
+    projectRenamed: 'Project renamed successfully',
+    projectCreated: 'Project created successfully',
+    submissionUpdated: 'Submission updated successfully',
+
+    confirmDelete: 'Confirm Delete',
+    confirmDeleteProjectMessage: 'Are you sure you want to delete this project? This action cannot be undone.',
+    noProjectsFound: 'No projects found',
+    noSubmissionsFound: 'No submissions found',
+    selectProjectToViewDetails: 'Select a project to view details',
+    users: 'Users',
+    submissions: 'Submissions',
+    viewFile: 'View File',
+    projectDetails: 'Project details and statistics',
+    reviewed: 'Reviewed',
+    pending: 'Pending',
+    errorUpdatingStatus: 'An error occurred while updating the status',
+    submissionDetails: 'Submission Details',
+    submittedOn: 'Submitted on',
+    markAsReviewed: 'Mark as Reviewed',
+    markAsPending: 'Mark as Pending',
+
+
+
+
+
+
+    generate_password: 'Generate secure password',
+    password: 'Password',
+    generate: 'Generate',
     filterByForm: 'Filter by Form',
     allForms: 'All Forms',
     form: 'Form',
-
+    project: 'Project',
+    select_project: 'Select a project',
+    project_required: 'Project is required',
+    project_id_invalid: 'Project ID must be a number',
+    projects: 'projects',
     checklist: 'Checklist',
     fieldKeyAlreadyExists: 'Cannot add field: key already exists',
     userCreated: 'User created successfully',
@@ -130,6 +191,9 @@ const translations = {
     english: 'English',
   },
   ar: {
+    generate_password: 'توليد كلمة مرور آمنة',
+    password: 'كلمة المرور',
+    generate: 'توليد',
     filterByForm: 'تصفية حسب النموذج',
     allForms: 'جميع النماذج',
     form: 'النموذج',
@@ -137,7 +201,11 @@ const translations = {
     userDeleted: 'تم حذف المستخدم بنجاح',
     userUpdated: 'تم تحديث بيانات المستخدم بنجاح',
     optionsPlaceholder: 'اختر من الخيارات المتاحة',
-
+    project: 'المشروع',
+    select_project: 'اختر مشروعًا',
+    project_required: 'حقل المشروع مطلوب',
+    project_id_invalid: 'يجب أن يكون رقم المشروع رقماً',
+    projects: 'المشاريع',
     fieldKeyAlreadyExists: 'لا يمكن إضافة الحقل: المفتاح مستخدم مسبقًا',
     checklist: 'قائمة اختيار متعددة',
     identity_document: 'رقم الهوية أو الإقامة',
@@ -241,10 +309,10 @@ const translations = {
     english: 'الإنجليزية',
   },
 };
-
 const userSchema = yup.object().shape({
   // name: yup.string().required('Name is required'),
-  email: yup.string().required('User Name is required'),
+  email: yup.string().required('National ID is required').matches(/^\d+$/, 'National ID must contain only digits').length(10, 'National ID must be exactly 10 digits long'),
+  projectId: yup.number().typeError('Project ID must be a number').required('Project ID is required'),
   password: yup.string().min(6, 'Password must be at least 6 characters').optional(),
   role: yup.string().oneOf(['admin', 'user'], 'Invalid role').required('Role is required'),
 });
@@ -479,8 +547,9 @@ export default function DashboardPage() {
   const [previewImg, setPreviewImg] = useState(null);
   const [showShareModal, setShowShareModal] = useState(null);
   const [visiblePasswords, setVisiblePasswords] = useState({});
-  const [language, setLanguage] = useState('en');
+  const [language, setLanguage] = useState('ar');
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
 
   const t = key => translations[language][key] || key;
 
@@ -522,6 +591,7 @@ export default function DashboardPage() {
   const {
     register: registerUser,
     handleSubmit: handleUserSubmit,
+    setValue,
     formState: { errors: userErrors },
     reset: resetUserForm,
   } = useForm({
@@ -586,6 +656,21 @@ export default function DashboardPage() {
     }
   };
 
+  const [projects, setProjects] = useState([]);
+
+  useEffect(() => {
+    const fetchProjects = async () => {
+      try {
+        const res = await api.get('/projects');
+        setProjects(res.data.data); // ✅ نأخذ data فقط
+      } catch (error) {
+        console.error('Failed to fetch projects:', error);
+      }
+    };
+
+    fetchProjects();
+  }, []);
+
   useEffect(() => {
     fetchData();
   }, [currentPage, currentUserPage, activeTab]);
@@ -622,6 +707,20 @@ export default function DashboardPage() {
       console.error('Failed to update field order:', error);
       fetchData();
     }
+  };
+
+  const generatePassword = () => {
+    const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*()';
+    let password = '';
+    for (let i = 0; i < 12; i++) {
+      password += chars.charAt(Math.floor(Math.random() * chars.length));
+    }
+    return password;
+  };
+
+  const handleGeneratePassword = () => {
+    const newPassword = generatePassword();
+    setValue('password', newPassword); // تحديث قيمة input في react-hook-form
   };
 
   const handleDeleteField = async fieldId => {
@@ -1102,6 +1201,10 @@ export default function DashboardPage() {
               <FiUser className='h-4 w-4' />
               <span>{t('users')}</span>
             </button>
+            <button onClick={() => setActiveTab('projects')} className={`whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm flex items-center space-x-2 ${activeTab === 'projects' ? 'border-indigo-500 text-indigo-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'} cursor-pointer`}>
+              <FiUser className='h-4 w-4' />
+              <span>{t('projects')}</span>
+            </button>
           </nav>
         </div>
 
@@ -1345,7 +1448,7 @@ export default function DashboardPage() {
                   {t('formSubmissions')}
                 </h2>
                 <p className='text-sm text-gray-500 mt-1'>
-                  {selectedFormId == "all" ? submissions.length : submissions?.filter(e => e.form_id == selectedFormId).length} {t('totalSubmissions')}
+                  {selectedFormId == 'all' ? submissions.length : submissions?.filter(e => e.form_id == selectedFormId).length} {t('totalSubmissions')}
                 </p>
               </div>
 
@@ -1402,7 +1505,7 @@ export default function DashboardPage() {
                       <thead className='bg-gray-50'>
                         <tr>
                           <th scope='col' className='px-6 py-3 rtl:text-right ltr:text-left text-xs font-medium text-gray-500 uppercase tracking-wider'>
-                            {t('name')}
+                            {t('National ID')}
                           </th>
                           <th scope='col' className='px-6 py-3 rtl:text-right ltr:text-left text-xs font-medium text-gray-500 uppercase tracking-wider'>
                             {t('password')}
@@ -1518,6 +1621,8 @@ export default function DashboardPage() {
             </div>
           </div>
         )}
+
+        {activeTab === 'projects' && <ProjectsTab t={t} />}
       </main>
 
       {/* Modals */}
@@ -1668,13 +1773,41 @@ export default function DashboardPage() {
               <input type='text' id='user-email' className={`mt-1 block w-full border ${userErrors.email ? 'border-red-300' : 'border-gray-300'} rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500`} {...registerUser('email')} />
               {userErrors.email && <p className='mt-1 text-sm text-red-600'>{userErrors.email.message}</p>}
             </div>
-            <div>
+
+            <div className='relative '>
               <label htmlFor='user-password' className='block text-sm font-medium text-gray-700'>
                 {t('password')}*
               </label>
-              <input type='password' id='user-password' className={`mt-1 block w-full border ${userErrors.password ? 'border-red-300' : 'border-gray-300'} rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500`} {...registerUser('password')} />
+
+              <div className='flex items-center gap-2 mt-1'>
+                <div className='w-full relative '>
+                  <input type={showPassword ? 'text' : 'password'} id='user-password' className={`block w-full border ${userErrors.password ? 'border-red-300' : 'border-gray-300'} rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500`} {...registerUser('password')} />
+                  <button type='button' onClick={() => setShowPassword(prev => !prev)} title={showPassword ? t('hide_password') : t('show_password')} className='absolute top-1/2 -translate-y-1/2 rtl:left-2 cursor-pointer ltr:right-2  text-gray-500 hover:text-indigo-600'>
+                    {showPassword ? <HiEyeOff size={18} /> : <FaEye size={18} />}
+                  </button>
+                </div>
+                <button type='button' onClick={handleGeneratePassword} title={t('generate_password')} className=' h-[42px] border border-gray-300 w-[45px] rounded-md shadow-sm flex-none flex items-center justify-center  p-2 bg-gray-100 text-white hover:bg-gray-300 cursor-pointer hover:scale-[1.1] duration-300 '>
+                  <img src='reset-password.png' alt='' className='w-full h-fit' />
+                </button>
+              </div>
               {userErrors.password && <p className='mt-1 text-sm text-red-600'>{userErrors.password.message}</p>}
             </div>
+
+            <div>
+              <label htmlFor='user-projectId' className='block text-sm font-medium text-gray-700'>
+                {t('project')}*
+              </label>
+              <select id='user-projectId' className={`mt-1 block w-full border ${userErrors.projectId ? 'border-red-300' : 'border-gray-300'} rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500`} {...registerUser('projectId')}>
+                <option value=''>-- {t('select_project')} --</option>
+                {projects.map(project => (
+                  <option key={project.id} value={project.id}>
+                    {project.name}
+                  </option>
+                ))}
+              </select>
+              {userErrors.projectId && <p className='mt-1 text-sm text-red-600'>{userErrors.projectId.message}</p>}
+            </div>
+
             <div>
               <label htmlFor='user-role' className='block text-sm font-medium text-gray-700'>
                 {t('role')}*
@@ -1720,13 +1853,49 @@ export default function DashboardPage() {
               <input type='text' id='edit-user-email' className={`mt-1 block w-full border ${userErrors.email ? 'border-red-300' : 'border-gray-300'} rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500`} {...registerUser('email')} />
               {userErrors.email && <p className='mt-1 text-sm text-red-600'>{userErrors.email.message}</p>}
             </div>
+
+            <div className='relative '>
+              <label htmlFor='user-password' className='block text-sm font-medium text-gray-700'>
+                {t('password')}*
+              </label>
+
+              <div className='flex items-center gap-2 mt-1'>
+                <div className='w-full relative '>
+                  <input type={showPassword ? 'text' : 'password'} id='user-password' className={`block w-full border ${userErrors.password ? 'border-red-300' : 'border-gray-300'} rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500`} {...registerUser('password')} />
+                  <button type='button' onClick={() => setShowPassword(prev => !prev)} title={showPassword ? t('hide_password') : t('show_password')} className='absolute top-1/2 -translate-y-1/2 rtl:left-2 cursor-pointer ltr:right-2  text-gray-500 hover:text-indigo-600'>
+                    {showPassword ? <HiEyeOff size={18} /> : <FaEye size={18} />}
+                  </button>
+                </div>
+                <button type='button' onClick={handleGeneratePassword} title={t('generate_password')} className=' h-[42px] border border-gray-300 w-[45px] rounded-md shadow-sm flex-none flex items-center justify-center  p-2 bg-gray-100 text-white hover:bg-gray-300 cursor-pointer hover:scale-[1.1] duration-300 '>
+                  <img src='reset-password.png' alt='' className='w-full h-fit' />
+                </button>
+              </div>
+              {userErrors.password && <p className='mt-1 text-sm text-red-600'>{userErrors.password.message}</p>}
+            </div>
+
             <div>
+              <label htmlFor='user-projectId' className='block text-sm font-medium text-gray-700'>
+                {t('project')}*
+              </label>
+              <select id='user-projectId' className={`mt-1 block w-full border ${userErrors.projectId ? 'border-red-300' : 'border-gray-300'} rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500`} {...registerUser('projectId')}>
+                <option value=''>-- {t('select_project')} --</option>
+                {projects.map(project => (
+                  <option key={project.id} value={project.id}>
+                    {project.name}
+                  </option>
+                ))}
+              </select>
+              {userErrors.projectId && <p className='mt-1 text-sm text-red-600'>{userErrors.projectId.message}</p>}
+            </div>
+
+            {/* <div>
               <label htmlFor='edit-user-password' className='block text-sm font-medium text-gray-700'>
                 {t('password')} ({t('optional')})
               </label>
               <input type='password' id='edit-user-password' className={`mt-1 block w-full border ${userErrors.password ? 'border-red-300' : 'border-gray-300'} rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500`} {...registerUser('password')} />
               {userErrors.password && <p className='mt-1 text-sm text-red-600'>{userErrors.password.message}</p>}
-            </div>
+            </div> */}
+
             <div>
               <label htmlFor='edit-user-role' className='block text-sm font-medium text-gray-700'>
                 {t('role')}*
