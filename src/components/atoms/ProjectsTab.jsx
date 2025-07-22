@@ -11,24 +11,29 @@ import { arSA } from 'date-fns/locale'; // يمكنك تغييره لـ enUS إ�
 function formatValue(value) {
   if (!value) return '-';
 
-  // إذا كان التاريخ بصيغة Date
+  // Handle Date objects
   const date = new Date(value);
   if (!isNaN(date) && value.toString().includes('GMT')) {
-    return format(date, 'dd MMMM yyyy' );
+    return format(date, 'dd MMMM yyyy');
   }
 
-  // إذا كانت صورة
+  // Handle file attachment objects
+  if(typeof value === "object") return null 
+ 
+
+  // Handle image paths (legacy string format)
   if (typeof value === 'string' && value.startsWith('uploads')) {
     return (
       <img
-        src={ baseImg + `${value}`}
+        src={baseImg + value}
         alt="attachment"
-        className="h-full w-full rounded border border-gray-200"
+        className="h-fit w-full object-contain rounded border border-gray-200"
       />
     );
   }
 
-  return value;
+  // Default case for strings/numbers
+  return value.toString();
 }
 
 
@@ -121,19 +126,7 @@ export default function ProjectsTab({ t }) {
     }
   };
 
-  const renderFilePreview = value => {
-    if (typeof value === 'string' && value.startsWith('upload/')) {
-      const isImage = /\.(jpg|jpeg|png|gif|webp)$/i.test(value);
-      return isImage ? (
-        <img src={`${process.env.REACT_APP_API_URL}/${value}`} alt='Uploaded content' className='h-16 w-16 object-cover rounded-md border' />
-      ) : (
-        <a href={`${process.env.REACT_APP_API_URL}/${value}`} target='_blank' rel='noopener noreferrer' className='text-indigo-600 hover:underline'>
-          {t('viewFile')}
-        </a>
-      );
-    }
-    return value;
-  };
+ 
 
   const viewSubmissionDetails = submission => {
     setCurrentSubmission(submission);
@@ -342,7 +335,7 @@ export default function ProjectsTab({ t }) {
           {Object.entries(currentSubmission.answers).map(([key, value]) => (
             <div
               key={key}
-              className="flex flex-col sm:flex-row sm:items-start sm:gap-3 border border-gray-200 shadow-sm rounded-lg p-3 bg-gray-50"
+              className={`flex flex-col sm:flex-row sm:items-start sm:gap-3 border border-gray-200 shadow-sm rounded-lg p-3 bg-gray-50 ${typeof value === "object" && "!hidden"} `}
             >
               <span className="text-base font-medium text-gray-600 capitalize whitespace-nowrap min-w-[120px]">
                 { key}:

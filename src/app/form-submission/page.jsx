@@ -184,6 +184,11 @@ export default function FormSubmissionPage() {
           });
         } else if (field.type === 'checklist') {
           acc[field.key] = yup.array().of(yup.string()).required(`${field.label} is required`);
+        } else if (field.type === 'phone') {
+          acc[field.key] = yup
+            .string()
+            .required(`${field.label} is required`)
+            .matches(/^(9665|05)[0-9]{8}$/, `${field.label} يجب أن يكون رقمًا سعوديًا صحيحًا`);
         } else {
           acc[field.key] = yup.string().required(`${field.label} is required`);
         }
@@ -203,7 +208,7 @@ export default function FormSubmissionPage() {
     resolver: activeForm ? yupResolver(schema) : undefined,
   });
 
-   const openAssetModal = fieldKey => {
+  const openAssetModal = fieldKey => {
     setCurrentFieldKey(fieldKey);
     setShowAssetModal(true);
   };
@@ -252,7 +257,7 @@ export default function FormSubmissionPage() {
         // Update existing submission
         await api.patch(`/form-submissions/${submissions[0].id}`, {
           answers: data,
-          form_id : activeForm?.id ,
+          form_id: activeForm?.id,
           isCheck: false, // Reset verification status when editing
         });
         toast.success('Submission updated successfully');
@@ -426,14 +431,23 @@ export default function FormSubmissionPage() {
           </div>
         );
 
-        case 'number':
+      case 'phone':
         return (
-           <input {...register(field.key)} type='number' className={`w-full px-4 py-3 border rounded-lg shadow-sm focus:outline-none focus:ring-2 ${error ? 'border-red-500 focus:ring-red-500' : 'border-gray-300 focus:border-indigo-500 focus:ring-indigo-500'}`} placeholder={placeholder || ''} disabled={isSubmitting} dir={language === 'ar' ? 'rtl' : 'ltr'} />
+          <input
+            {...register(field.key)}
+            type='tel'
+            defaultValue='966' // بادئة الرقم السعودي بدون "+"
+            className={`w-full px-4 py-3 border rounded-lg shadow-sm focus:outline-none focus:ring-2 ${error ? 'border-red-500 focus:ring-red-500' : 'border-gray-300 focus:border-indigo-500 focus:ring-indigo-500'}`}
+            placeholder={placeholder || 'مثال: 966512345678'}
+            disabled={isSubmitting}
+            // dir={language === 'ar' ? 'rtl' : 'ltr'}
+          />
         );
-        case 'email':
-        return (
-           <input {...register(field.key)} type='email' className={`w-full px-4 py-3 border rounded-lg shadow-sm focus:outline-none focus:ring-2 ${error ? 'border-red-500 focus:ring-red-500' : 'border-gray-300 focus:border-indigo-500 focus:ring-indigo-500'}`} placeholder={placeholder || ''} disabled={isSubmitting} dir={language === 'ar' ? 'rtl' : 'ltr'} />
-        );
+
+      case 'number':
+        return <input {...register(field.key)} type='number' className={`w-full px-4 py-3 border rounded-lg shadow-sm focus:outline-none focus:ring-2 ${error ? 'border-red-500 focus:ring-red-500' : 'border-gray-300 focus:border-indigo-500 focus:ring-indigo-500'}`} placeholder={placeholder || ''} disabled={isSubmitting} dir={language === 'ar' ? 'rtl' : 'ltr'} />;
+      case 'email':
+        return <input {...register(field.key)} type='email' className={`w-full px-4 py-3 border rounded-lg shadow-sm focus:outline-none focus:ring-2 ${error ? 'border-red-500 focus:ring-red-500' : 'border-gray-300 focus:border-indigo-500 focus:ring-indigo-500'}`} placeholder={placeholder || ''} disabled={isSubmitting} dir={language === 'ar' ? 'rtl' : 'ltr'} />;
 
       default:
         return <input {...register(field.key)} type='text' className={`w-full px-4 py-3 border rounded-lg shadow-sm focus:outline-none focus:ring-2 ${error ? 'border-red-500 focus:ring-red-500' : 'border-gray-300 focus:border-indigo-500 focus:ring-indigo-500'}`} placeholder={placeholder || ''} disabled={isSubmitting} dir={language === 'ar' ? 'rtl' : 'ltr'} />;

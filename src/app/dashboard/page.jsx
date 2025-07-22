@@ -16,10 +16,15 @@ import { LogoutButton } from '../../components/atoms/LogoutButton';
 import { DynamicImage } from '../../utils/DynamicImg';
 import { HiEyeOff } from 'react-icons/hi';
 import ProjectsTab from '../../components/atoms/ProjectsTab';
+import UsersTab from '../../components/atoms/UsersTab';
 
 // Translation objects
 const translations = {
   en: {
+    downloadTemplate: 'Download Template',
+    uploading: 'Uploading',
+    importUsers: 'Import Users',
+    noProjectSelected: 'No project selected',
     projects: 'Projects',
     projectName: 'Project Name',
     createNewForm: 'Create New Project',
@@ -39,17 +44,6 @@ const translations = {
     submittedOn: 'Submitted on',
     markAsReviewed: 'Mark as Reviewed',
     markAsPending: 'Mark as Pending',
-    updatingSubmission: 'Error updating submission',
-    loadingProjects: 'Error loading projects',
-    loadingUsers: 'Error loading users',
-    deletingProject: 'Error deleting project',
-    renamingProject: 'Error renaming project',
-    creatingProject: 'Error creating project',
-    projectDeleted: 'Project deleted successfully',
-    projectRenamed: 'Project renamed successfully',
-    projectCreated: 'Project created successfully',
-    submissionUpdated: 'Submission updated successfully',
-
     confirmDelete: 'Confirm Delete',
     confirmDeleteProjectMessage: 'Are you sure you want to delete this project? This action cannot be undone.',
     noProjectsFound: 'No projects found',
@@ -59,18 +53,21 @@ const translations = {
     submissions: 'Submissions',
     viewFile: 'View File',
     projectDetails: 'Project details and statistics',
-    reviewed: 'Reviewed',
-    pending: 'Pending',
-    errorUpdatingStatus: 'An error occurred while updating the status',
-    submissionDetails: 'Submission Details',
-    submittedOn: 'Submitted on',
-    markAsReviewed: 'Mark as Reviewed',
-    markAsPending: 'Mark as Pending',
-
-
-
-
-
+    loadingProjects: 'Error loading projects',
+    loadingUsers: 'Error loading users',
+    deletingProject: 'Error deleting project',
+    renamingProject: 'Error renaming project',
+    creatingProject: 'Error creating project',
+    updatingSubmission: 'Error updating submission',
+    updatingStatus: 'An error occurred while updating the status',
+    projectDeleted: 'Project deleted successfully',
+    projectRenamed: 'Project renamed successfully',
+    projectCreated: 'Project created successfully',
+    submissionUpdated: 'Submission updated successfully',
+    updateFieldError: 'Error updating field',
+    addFieldError: 'Error adding field',
+    fieldUpdated: 'Field updated successfully',
+    fieldAdded: 'Field added successfully',
 
     generate_password: 'Generate secure password',
     password: 'Password',
@@ -82,7 +79,6 @@ const translations = {
     select_project: 'Select a project',
     project_required: 'Project is required',
     project_id_invalid: 'Project ID must be a number',
-    projects: 'projects',
     checklist: 'Checklist',
     fieldKeyAlreadyExists: 'Cannot add field: key already exists',
     userCreated: 'User created successfully',
@@ -91,7 +87,6 @@ const translations = {
     optionsPlaceholder: 'Select from available options',
 
     identity_document: 'ID or Residence Number',
-    createNewForm: 'Create New Form',
     createForm: 'Create Form',
     updateField: 'Update Field',
     editField: 'Edit Field',
@@ -103,8 +98,6 @@ const translations = {
     welcome: 'Welcome',
     logout: 'Logout',
     formsManagement: 'Forms Management',
-    submissions: 'Submissions',
-    users: 'Users',
     yourForms: 'Your Forms',
     createManageForms: 'Create and manage your data collection forms',
     newForm: 'New Form',
@@ -116,21 +109,17 @@ const translations = {
     totalSubmissions: 'Total Submissions',
     exportExcel: 'Export to Excel',
     exporting: 'Exporting...',
-    registeredUsers: 'Registered User',
+    registeredUsers: 'Registered Users',
     newUser: 'New User',
     name: 'Name',
-    password: 'Password',
     role: 'Role',
     joinedAt: 'Joined At',
-    actions: 'Actions',
     admin: 'Admin',
     user: 'User',
-    delete: 'Delete',
     cancel: 'Cancel',
     createUser: 'Create User',
     updateUser: 'Update User',
     editUser: 'Edit User',
-    confirmDelete: 'Confirm Deletion',
     cannotUndo: 'This action cannot be undone.',
     submit: 'Submit',
     update: 'Update',
@@ -139,9 +128,7 @@ const translations = {
     optional: 'Optional',
     active: 'Active',
     inactive: 'Inactive',
-    reviewed: 'Reviewed',
     pendingReview: 'Pending Review',
-    status: 'Status',
     submittedAt: 'Submitted At',
     question: 'Question',
     response: 'Response',
@@ -157,7 +144,6 @@ const translations = {
     shareWhatsApp: 'Share via WhatsApp',
     verifying: 'Verifying...',
     imagePreview: 'Image Preview',
-    submissionDetails: 'Submission Details',
     label: 'Label',
     key: 'Key (Unique Identifier)',
     placeholder: 'Placeholder',
@@ -171,6 +157,7 @@ const translations = {
     checkbox: 'Checkbox',
     textArea: 'Text Area',
     number: 'Number',
+    phoneNumber: 'Phone Number',
     email: 'Email',
     date: 'Date',
     fileUpload: 'File Upload',
@@ -189,66 +176,135 @@ const translations = {
     language: 'Language',
     arabic: 'Arabic',
     english: 'English',
+    national_id: 'National ID',
+    noDescription: 'No description provided',
+    deactivateForm: 'Form deactivated successfully',
+    activateForm: 'Form activated successfully',
+
+    show_password: 'Show password',
+    hide_password: 'Hide password',
+
+    preview: 'Preview',
+    hidden: 'Hidden',
+    phoneRequired: 'Phone number is required',
+    retrievePasswordError: 'An error occurred while retrieving the password',
+    fetchPasswordError: 'Failed to fetch password',
+    fetchDataError: 'Failed to fetch data',
+    updateOrderError: 'Failed to update order',
+    fieldDeleted: 'Field deleted successfully',
+    formDeleted: 'Form deleted successfully',
+    deleteFieldError: 'An error occurred while deleting the field',
+    deleteFormError: 'An error occurred while deleting the form',
+    formCreated: 'Form created successfully',
+    createFormError: 'An error occurred while creating the form',
+    createUserError: 'An error occurred while creating the user',
+    updateUserError: 'An error occurred while updating the user',
+    deleteUserError: 'An error occurred while deleting the user',
+    updateSubmissionError: 'An error occurred while updating the submission',
+    submissionDeleted: 'Submission deleted successfully',
+    deleteSubmissionError: 'An error occurred while deleting the submission',
+    exportSuccess: 'Data exported successfully',
+    exportError: 'An error occurred while exporting data',
   },
   ar: {
+    downloadTemplate: 'تحميل القالب',
+    uploading: 'جاري الرفع',
+    importUsers: 'استيراد المستخدمين',
+    noProjectSelected: 'لم يتم تحديد مشروع',
+
+    projects: 'المشاريع',
+    projectName: 'اسم المشروع',
+    createNewForm: 'إنشاء مشروع جديد',
+    create: 'إنشاء',
+    edit: 'تعديل',
+    delete: 'حذف',
+    usersInProject: 'المستخدمون في المشروع',
+    noUsersFound: 'لم يتم العثور على مستخدمين',
+    selectProjectToViewUsers: 'اختر مشروعًا لعرض مستخدميه',
+    status: 'الحالة',
+    submissionDate: 'تاريخ الإرسال',
+    actions: 'الإجراءات',
+    view: 'عرض',
+    reviewed: 'تمت مراجعته',
+    pending: 'قيد الانتظار',
+    submissionDetails: 'تفاصيل الإرسال',
+    submittedOn: 'تم الإرسال في',
+    markAsReviewed: 'وضع علامة كمراجع',
+    markAsPending: 'وضع علامة كقيد الانتظار',
+    confirmDelete: 'تأكيد الحذف',
+    confirmDeleteProjectMessage: 'هل أنت متأكد أنك تريد حذف هذا المشروع؟ لا يمكن التراجع عن هذا الإجراء.',
+    noProjectsFound: 'لم يتم العثور على مشاريع',
+    noSubmissionsFound: 'لم يتم العثور على إرساليات',
+    selectProjectToViewDetails: 'اختر مشروعًا لعرض التفاصيل',
+    users: 'المستخدمون',
+    submissions: 'الإرساليات',
+    viewFile: 'عرض الملف',
+    projectDetails: 'تفاصيل وإحصائيات المشروع',
+    loadingProjects: 'حدث خطأ أثناء تحميل المشاريع',
+    loadingUsers: 'حدث خطأ أثناء تحميل المستخدمين',
+    deletingProject: 'حدث خطأ أثناء حذف المشروع',
+    renamingProject: 'حدث خطأ أثناء إعادة تسمية المشروع',
+    creatingProject: 'حدث خطأ أثناء إنشاء المشروع',
+    updatingSubmission: 'حدث خطأ أثناء تحديث الإرسالية',
+    updatingStatus: 'حدث خطأ أثناء تحديث الحالة',
+    projectDeleted: 'تم حذف المشروع بنجاح',
+    projectRenamed: 'تمت إعادة تسمية المشروع بنجاح',
+    projectCreated: 'تم إنشاء المشروع بنجاح',
+    submissionUpdated: 'تم تحديث الإرسالية بنجاح',
+    updateFieldError: 'حدث خطأ أثناء تحديث الحقل',
+    addFieldError: 'حدث خطأ أثناء إضافة الحقل',
+    fieldUpdated: 'تم تحديث الحقل بنجاح',
+    fieldAdded: 'تمت إضافة الحقل بنجاح',
     generate_password: 'توليد كلمة مرور آمنة',
     password: 'كلمة المرور',
     generate: 'توليد',
     filterByForm: 'تصفية حسب النموذج',
     allForms: 'جميع النماذج',
-    form: 'النموذج',
+    form: 'نموذج',
+    project: 'مشروع',
+    select_project: 'اختر مشروعًا',
+    project_required: 'المشروع مطلوب',
+    project_id_invalid: 'معرّف المشروع يجب أن يكون رقمًا',
+    checklist: 'قائمة التحقق',
+    fieldKeyAlreadyExists: 'لا يمكن إضافة الحقل: المفتاح موجود مسبقًا',
     userCreated: 'تم إنشاء المستخدم بنجاح',
     userDeleted: 'تم حذف المستخدم بنجاح',
-    userUpdated: 'تم تحديث بيانات المستخدم بنجاح',
+    userUpdated: 'تم تحديث المستخدم بنجاح',
     optionsPlaceholder: 'اختر من الخيارات المتاحة',
-    project: 'المشروع',
-    select_project: 'اختر مشروعًا',
-    project_required: 'حقل المشروع مطلوب',
-    project_id_invalid: 'يجب أن يكون رقم المشروع رقماً',
-    projects: 'المشاريع',
-    fieldKeyAlreadyExists: 'لا يمكن إضافة الحقل: المفتاح مستخدم مسبقًا',
-    checklist: 'قائمة اختيار متعددة',
     identity_document: 'رقم الهوية أو الإقامة',
-    createNewForm: 'إنشاء نموذج جديد',
     createForm: 'إنشاء نموذج',
     updateField: 'تحديث الحقل',
     editField: 'تعديل الحقل',
     addField: 'إضافة حقل',
     createNewUser: 'إنشاء مستخدم جديد',
-    orCreateNewForm: 'أو إنشاء نموذج جديد',
+    orCreateNewForm: 'أو أنشئ نموذجًا جديدًا',
     selectFormDescription: 'اختر وصف النموذج',
     dashboard: 'لوحة التحكم',
-    welcome: 'مرحباً',
+    welcome: 'مرحبًا',
     logout: 'تسجيل الخروج',
     formsManagement: 'إدارة النماذج',
-    submissions: 'التسجيلات',
-    users: 'المستخدمين',
     yourForms: 'نماذجك',
-    createManageForms: 'أنشئ وادير نماذج جمع البيانات الخاصة بك',
+    createManageForms: 'أنشئ وأدر نماذج جمع البيانات الخاصة بك',
     newForm: 'نموذج جديد',
     formBuilder: 'منشئ النماذج',
-    editing: 'تعديل',
-    selectForm: 'اختر نموذجاً لتحرير حقوله',
+    editing: 'تحرير',
+    selectForm: 'اختر نموذجًا لتعديل حقوله',
     addNewField: 'إضافة حقل جديد',
-    formSubmissions: 'تسجيلات النماذج',
-    totalSubmissions: 'إجمالي التسجيلات',
+    formSubmissions: 'إرساليات النموذج',
+    totalSubmissions: 'إجمالي الإرساليات',
     exportExcel: 'تصدير إلى Excel',
-    exporting: 'جاري التصدير...',
-    registeredUsers: 'مستخدم مسجل',
+    exporting: 'جارٍ التصدير...',
+    registeredUsers: 'المستخدمون المسجلون',
     newUser: 'مستخدم جديد',
     name: 'الاسم',
-    password: 'كلمة المرور',
     role: 'الدور',
     joinedAt: 'تاريخ الانضمام',
-    actions: 'الإجراءات',
-    admin: 'مدير',
+    admin: 'مشرف',
     user: 'مستخدم',
-    delete: 'حذف',
     cancel: 'إلغاء',
     createUser: 'إنشاء مستخدم',
     updateUser: 'تحديث المستخدم',
     editUser: 'تعديل المستخدم',
-    confirmDelete: 'تأكيد الحذف',
     cannotUndo: 'لا يمكن التراجع عن هذا الإجراء.',
     submit: 'إرسال',
     update: 'تحديث',
@@ -257,58 +313,84 @@ const translations = {
     optional: 'اختياري',
     active: 'نشط',
     inactive: 'غير نشط',
-    reviewed: 'تم المراجعة',
-    pendingReview: 'بانتظار المراجعة',
-    status: 'الحالة',
+    pendingReview: 'قيد المراجعة',
     submittedAt: 'تاريخ الإرسال',
     question: 'السؤال',
     response: 'الإجابة',
     noResponse: 'لا توجد إجابة',
-    markReviewed: 'وضع علامة كمُراجَع',
-    noForms: 'لا توجد نماذج بعد',
-    createFirstForm: 'ابدأ بإنشاء أول نموذج لك',
-    noSubmissions: 'لا توجد تسجيلات',
+    markReviewed: 'وضع علامة كمراجع',
+    noForms: 'لا توجد نماذج حتى الآن',
+    createFirstForm: 'ابدأ بإنشاء النموذج الأول',
+    noSubmissions: 'لا توجد إرساليات',
     noUsers: 'لا يوجد مستخدمون',
-    shareCredentials: 'مشاركة بيانات الاعتماد عبر واتساب',
+    shareCredentials: 'مشاركة بيانات الدخول عبر واتساب',
     recipientNumber: 'رقم واتساب المستلم',
     phonePlaceholder: 'مثال: 201234567890',
     shareWhatsApp: 'مشاركة عبر واتساب',
-    verifying: 'جاري التحقق...',
+    verifying: 'جارٍ التحقق...',
     imagePreview: 'معاينة الصورة',
-    submissionDetails: 'تفاصيل التسجيل',
     label: 'التسمية',
-    key: 'المفتاح (معرف فريد)',
+    key: 'المفتاح (معرّف فريد)',
     placeholder: 'النص التوضيحي',
     fieldType: 'نوع الحقل',
-    options: 'خيارات (مفصولة بفواصل)',
-    addOptions: 'أضف خيارات متعددة مفصولة بفواصل',
+    options: 'الخيارات (مفصولة بفواصل)',
+    addOptions: 'أضف عدة خيارات مفصولة بفواصل',
     requiredField: 'حقل مطلوب',
     textInput: 'إدخال نصي',
     radioButtons: 'أزرار اختيار',
     dropdownSelect: 'قائمة منسدلة',
-    checkbox: 'خانة اختيار',
+    checkbox: 'مربع اختيار',
     textArea: 'منطقة نصية',
     number: 'رقم',
-    email: 'بريد إلكتروني',
+    phoneNumber: 'رقم الهاتف',
+    email: 'البريد الإلكتروني',
     date: 'تاريخ',
     fileUpload: 'رفع ملف',
     description: 'الوصف',
     title: 'العنوان',
     showPassword: 'إظهار كلمة المرور',
     hidePassword: 'إخفاء كلمة المرور',
-    fields: 'حقول',
-    field: 'حقل',
+    fields: 'الحقول',
+    field: 'الحقل',
     created: 'تم الإنشاء',
-    viewSubmission: 'عرض التسجيل',
-    noSubmissionsUser: 'لا توجد تسجيلات',
+    viewSubmission: 'عرض الإرسالية',
+    noSubmissionsUser: 'لا توجد إرساليات',
     search: 'بحث',
     filter: 'تصفية',
     all: 'الكل',
     language: 'اللغة',
     arabic: 'العربية',
     english: 'الإنجليزية',
+    national_id: 'الهوية الوطنية',
+    noDescription: 'لا يوجد وصف',
+    deactivateForm: 'تم تعطيل النموذج بنجاح',
+    activateForm: 'تم تفعيل النموذج بنجاح',
+    show_password: 'إظهار كلمة المرور',
+    hide_password: 'إخفاء كلمة المرور',
+    preview: 'معاينة',
+    hidden: 'مخفي',
+    phoneRequired: 'رقم الهاتف مطلوب',
+    retrievePasswordError: 'حدث خطأ أثناء استرجاع كلمة المرور',
+    fetchPasswordError: 'فشل في جلب كلمة المرور',
+    fetchDataError: 'فشل في جلب البيانات',
+    updateOrderError: 'فشل في تحديث الترتيب',
+    fieldDeleted: 'تم حذف الحقل بنجاح',
+    formDeleted: 'تم حذف النموذج بنجاح',
+    deleteFieldError: 'حدث خطأ أثناء حذف الحقل',
+    deleteFormError: 'حدث خطأ أثناء حذف النموذج',
+    formCreated: 'تم إنشاء النموذج بنجاح',
+    createFormError: 'حدث خطأ أثناء إنشاء النموذج',
+    createUserError: 'حدث خطأ أثناء إنشاء المستخدم',
+    updateUserError: 'حدث خطأ أثناء تحديث المستخدم',
+    deleteUserError: 'حدث خطأ أثناء حذف المستخدم',
+    updateSubmissionError: 'حدث خطأ أثناء تحديث الإرسالية',
+    submissionDeleted: 'تم حذف الإرسالية بنجاح',
+    deleteSubmissionError: 'حدث خطأ أثناء حذف الإرسالية',
+    exportSuccess: 'تم تصدير البيانات بنجاح',
+    exportError: 'حدث خطأ أثناء تصدير البيانات',
   },
 };
+
 const userSchema = yup.object().shape({
   // name: yup.string().required('Name is required'),
   email: yup.string().required('National ID is required').matches(/^\d+$/, 'National ID must contain only digits').length(10, 'National ID must be exactly 10 digits long'),
@@ -416,7 +498,7 @@ const SubmissionDetails = ({ submission, onClose, t }) => {
   );
 };
 
-const SkeletonLoader = ({ count = 3 }) => {
+export const SkeletonLoader = ({ count = 3 }) => {
   return (
     <div className='overflow-x-auto scrollbar-custom'>
       <table className='min-w-full divide-y divide-gray-200'>
@@ -999,7 +1081,7 @@ export default function DashboardPage() {
             <thead className='bg-gray-50'>
               <tr>
                 <th className='px-6 py-3 rtl:text-right ltr:text-left text-xs font-medium text-gray-500 uppercase tracking-wider'>{t('status')}</th>
-                <th className='px-6 py-3 rtl:text-right ltr:text-left text-xs font-medium text-gray-500 uppercase tracking-wider'>{t('email')}</th>
+                <th className='px-6 py-3 rtl:text-right ltr:text-left text-xs font-medium text-gray-500 uppercase tracking-wider'>{t('national_id')}</th>
                 {allKeys.map(key => (
                   <th key={key} className='px-6 py-3 rtl:text-right ltr:text-left text-xs font-medium text-gray-500 uppercase tracking-wider'>
                     {key}
@@ -1478,149 +1560,7 @@ export default function DashboardPage() {
           </div>
         )}
 
-        {activeTab === 'users' && (
-          <div className='bg-white rounded-xl shadow-md overflow-hidden'>
-            <div className='p-5 border-b border-gray-100 flex items-center justify-between flex-wrap gap-4'>
-              <div>
-                <h2 className='text-xl font-bold text-gray-800 flex items-center gap-2'>
-                  <FaUser className='text-indigo-500' />
-                  {t('users')}
-                </h2>
-                <p className='text-sm text-gray-500 mt-1'>
-                  {users.length} {t('registeredUsers')}
-                </p>
-              </div>
-              <button onClick={() => setShowNewUserModal(true)} className='flex items-center space-x-1 bg-indigo-600 hover:bg-indigo-700 text-white px-3 py-1.5 rounded-md text-sm transition-colors cursor-pointer'>
-                <FiPlus className='h-4 w-4' />
-                <span>{t('newUser')}</span>
-              </button>
-            </div>
-            <div className='p-4'>
-              {isLoading.users ? (
-                <SkeletonLoader count={5} />
-              ) : users.length > 0 ? (
-                <>
-                  <div className='overflow-x-auto scrollbar-custom'>
-                    <table className='min-w-full divide-y divide-gray-200'>
-                      <thead className='bg-gray-50'>
-                        <tr>
-                          <th scope='col' className='px-6 py-3 rtl:text-right ltr:text-left text-xs font-medium text-gray-500 uppercase tracking-wider'>
-                            {t('National ID')}
-                          </th>
-                          <th scope='col' className='px-6 py-3 rtl:text-right ltr:text-left text-xs font-medium text-gray-500 uppercase tracking-wider'>
-                            {t('password')}
-                          </th>
-                          <th scope='col' className='px-6 py-3 rtl:text-right ltr:text-left text-xs font-medium text-gray-500 uppercase tracking-wider'>
-                            {t('role')}
-                          </th>
-                          <th scope='col' className='px-6 py-3 rtl:text-right ltr:text-left text-xs font-medium text-gray-500 uppercase tracking-wider'>
-                            {t('joinedAt')}
-                          </th>
-                          <th scope='col' className='px-6 py-3 rtl:text-right ltr:text-left text-xs font-medium text-gray-500 uppercase tracking-wider'>
-                            {t('submissions')}
-                          </th>
-                          <th scope='col' className='px-6 py-3 rtl:text-right ltr:text-left text-xs font-medium text-gray-500 uppercase tracking-wider'>
-                            {t('actions')}
-                          </th>
-                        </tr>
-                      </thead>
-                      <tbody className='bg-white divide-y divide-gray-200'>
-                        {users.map(user => (
-                          <tr key={user.id} className='hover:bg-gray-50'>
-                            <td className='px-6 py-4 whitespace-nowrap'>
-                              <div className='flex items-center gap-2 '>
-                                <div className='flex-shrink-0 h-10 w-10 rounded-full bg-indigo-100 flex items-center justify-center text-indigo-600 font-medium uppercase '>{user.email?.charAt(0)}</div>
-                                <div className=''>
-                                  <div className='text-sm font-medium text-gray-900'>{user.email}</div>
-                                </div>
-                              </div>
-                            </td>
-
-                            <td className='px-6 py-4 whitespace-nowrap text-sm text-gray-500'>
-                              <div className='flex items-center space-x-2'>
-                                {visiblePasswords[user.id] ? <span>{visiblePasswords[user.id]}</span> : <span className='text-gray-400 italic'>{t('hidden')}</span>}
-
-                                <button onClick={() => handleShowPassword(user.id)} className='cursor-pointer hover:scale-[1.1] duration-300 text-blue-500 hover:text-blue-700' title={visiblePasswords[user.id] ? t('hidePassword') : t('showPassword')}>
-                                  {visiblePasswords[user.id] ? <FiEyeOff className='w-4 h-4' /> : <FiEye className='w-4 h-4' />}
-                                </button>
-                              </div>
-                            </td>
-
-                            <td className='px-6 py-4 whitespace-nowrap'>
-                              <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${user.role === 'admin' ? 'bg-purple-100 text-purple-800' : 'bg-blue-100 text-blue-800'}`}>{t(user.role)}</span>
-                            </td>
-                            <td className='px-6 py-4 whitespace-nowrap text-sm text-gray-500'>{new Date(user.created_at).toLocaleDateString()}</td>
-                            <td className='px-6 py-4 whitespace-nowrap'>
-                              {user.formSubmissions?.length > 0 ? (
-                                <button onClick={() => setViewSubmission(user.formSubmissions[0])} className='text-indigo-600 hover:text-indigo-900 text-sm cursor-pointer'>
-                                  {t('viewSubmission')}
-                                </button>
-                              ) : (
-                                <span className='text-sm text-gray-500'>{t('noSubmissionsUser')}</span>
-                              )}
-                            </td>
-                            <td className='px-6 py-4 whitespace-nowrap text-sm text-gray-500 space-x-2'>
-                              <button
-                                onClick={() => {
-                                  setEditingUser(user);
-                                  resetUserForm({
-                                    name: user.email,
-                                    email: user.email,
-                                    role: user.role,
-                                  });
-                                  setShowEditUserModal(true);
-                                }}
-                                className='text-indigo-600 hover:text-indigo-900 cursor-pointer'
-                                title={t('edit')}>
-                                <FiEdit2 className='h-4 w-4' />
-                              </button>
-                              <button onClick={() => setShowShareModal(user)} className='text-green-600 hover:text-green-900 cursor-pointer' title={t('shareCredentials')}>
-                                <FiShare2 className='h-4 w-4' />
-                              </button>
-                              <button onClick={() => setShowDeleteModal({ show: true, id: user.id, type: 'user' })} className='text-red-600 hover:text-red-900 cursor-pointer' title={t('delete')}>
-                                <FiTrash2 className='h-4 w-4' />
-                              </button>
-                            </td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  </div>
-                  <div dir='ltr' className='flex items-center justify-center mt-8 space-x-1'>
-                    <button onClick={() => setCurrentUserPage(prev => Math.max(prev - 1, 1))} disabled={currentUserPage === 1} className='p-2 border border-gray-300 !rounded-full w-[30px] h-[30px] flex items-center justify-center text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50'>
-                      <FiChevronLeft className='h-4 w-4' />
-                    </button>
-
-                    {Array.from({ length: Math.min(5, totalUserPages) }, (_, i) => {
-                      let pageNum;
-                      if (totalUserPages <= 5) {
-                        pageNum = i + 1;
-                      } else if (currentUserPage <= 3) {
-                        pageNum = i + 1;
-                      } else if (currentUserPage >= totalUserPages - 2) {
-                        pageNum = totalUserPages - 4 + i;
-                      } else {
-                        pageNum = currentUserPage - 2 + i;
-                      }
-
-                      return (
-                        <button key={pageNum} onClick={() => setCurrentUserPage(pageNum)} className={`px-3 py-1 !rounded-full w-[30px] h-[30px] flex items-center justify-center text-sm ${currentUserPage === pageNum ? 'bg-indigo-600 text-white' : 'bg-white text-gray-700 hover:bg-gray-100'}`}>
-                          {pageNum}
-                        </button>
-                      );
-                    })}
-
-                    <button onClick={() => setCurrentUserPage(prev => Math.min(prev + 1, totalUserPages))} disabled={currentUserPage === totalUserPages} className='p-2 border border-gray-300 !rounded-full w-[30px] h-[30px] flex items-center justify-center text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50'>
-                      <FiChevronRight className='h-4 w-4' />
-                    </button>
-                  </div>
-                </>
-              ) : (
-                <div className='text-center py-8 text-gray-500'>{t('noUsers')}</div>
-              )}
-            </div>
-          </div>
-        )}
+        {activeTab === 'users' && <UsersTab setUsers={setUsers} projects={projects} t={t} users={users} isLoading={isLoading} visiblePasswords={visiblePasswords} handleShowPassword={handleShowPassword} setShowNewUserModal={setShowNewUserModal} setEditingUser={setEditingUser} resetUserForm={resetUserForm} setShowEditUserModal={setShowEditUserModal} setShowShareModal={setShowShareModal} setShowDeleteModal={setShowDeleteModal} setViewSubmission={setViewSubmission} currentUserPage={currentUserPage} setCurrentUserPage={setCurrentUserPage} totalUserPages={totalUserPages} />}
 
         {activeTab === 'projects' && <ProjectsTab t={t} />}
       </main>
@@ -1709,6 +1649,7 @@ export default function DashboardPage() {
               <select id='field-type' className={`mt-1 block w-full border ${fieldErrors.type ? 'border-red-300' : 'border-gray-300'} rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500`} {...registerField('type')}>
                 <option value='text'>{t('textInput')}</option>
                 <option value='number'>{t('number')}</option>
+                <option value='phone'>{t('phoneNumber')}</option>
                 <option value='email'>{t('email')}</option>
                 <option value='date'>{t('date')}</option>
                 <option value='textarea'>{t('textArea')}</option>
