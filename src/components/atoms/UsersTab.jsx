@@ -8,7 +8,7 @@ import toast from 'react-hot-toast';
 import axios from 'axios';
 import api from '../../utils/api';
 
-const UsersTab = ({ projects, t, setUsers, users = [], isLoading = {}, visiblePasswords = {}, handleShowPassword, setShowNewUserModal, setEditingUser, resetUserForm, setShowEditUserModal, setShowDeleteModal, setShowShareModal, setViewSubmission, currentUserPage = 1, setCurrentUserPage, totalUserPages = 1 }) => {
+const UsersTab = ({handleGeneratePassword , projects, t, setUsers, users = [], isLoading = {}, visiblePasswords = {}, handleShowPassword, setShowNewUserModal, setEditingUser, resetUserForm, setShowEditUserModal, setShowDeleteModal, setShowShareModal, setViewSubmission, currentUserPage = 1, setCurrentUserPage, totalUserPages = 1 }) => {
   const fileInputRef = useRef(null);
   const [isUploading, setIsUploading] = useState(false);
   const [uploadedUsers, setUploadedUsers] = useState([]);
@@ -88,7 +88,7 @@ const UsersTab = ({ projects, t, setUsers, users = [], isLoading = {}, visiblePa
 
       const usersToUpload = jsonData.map(row => ({
         email: row['National ID'],
-        password: row['Password'],
+        password: String( row['Password']) ,
         role: row['Role'],
         projectName: row['Project Name'],
       }));
@@ -104,11 +104,11 @@ const UsersTab = ({ projects, t, setUsers, users = [], isLoading = {}, visiblePa
         if (result.status === 'failed') {
           toast.error(`${result.reason}`);
         } else {
+          toast.success(`✅Email ${result.email} created successfully`);
         }
       });
 
       setUsers(prev => [...response.data.results, ...prev]);
-      toast.success(`✅created successfully`);
     } catch (err) {
       toast.error('Failed to read file or upload data');
     } finally {
@@ -133,16 +133,16 @@ const UsersTab = ({ projects, t, setUsers, users = [], isLoading = {}, visiblePa
 
           <div className='flex gap-3 flex-wrap'>
             {/* Download Template Button */}
-            <button onClick={handleDownloadTemplate} className='flex items-center cursor-pointer bg-white border border-gray-200 text-gray-700 px-4 py-2 rounded-lg text-sm hover:bg-gray-50 hover:border-gray-300 transition-all duration-200 shadow-xs hover:shadow-sm focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-100'>
-              <FiDownload className='w-4 h-4 mr-2 text-gray-600' />
+            <button onClick={handleDownloadTemplate} className='flex items-center cursor-pointer gap-2 bg-white border border-gray-200 text-gray-700 px-4 py-2 rounded-lg text-sm hover:bg-gray-50 hover:border-gray-300 transition-all duration-200 shadow-xs hover:shadow-sm focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-100'>
+              <FiDownload className='w-4 h-4 text-gray-600' />
               {t('downloadTemplate')}
             </button>
 
             {/* Import Users Button */}
-            <button onClick={() => fileInputRef.current.click()} className={`flex items-center cursor-pointer px-4 py-2 rounded-lg text-sm transition-all duration-200 shadow-xs hover:shadow-sm focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-100 ${isUploading ? 'bg-green-100 text-green-800 cursor-not-allowed' : 'bg-white border border-green-200 text-green-700 hover:bg-green-50 hover:border-green-300'}`} disabled={isUploading}>
+            <button onClick={() => fileInputRef.current.click()} className={`flex items-center gap-2 cursor-pointer px-4 py-2 rounded-lg text-sm transition-all duration-200 shadow-xs hover:shadow-sm focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-100 ${isUploading ? 'bg-green-100 text-green-800 cursor-not-allowed' : 'bg-white border border-green-200 text-green-700 hover:bg-green-50 hover:border-green-300'}`} disabled={isUploading}>
               {isUploading ? (
                 <>
-                  <svg className='animate-spin h-4 w-4 mr-2 text-green-600' xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24'>
+                  <svg className='animate-spin h-4 w-4 text-green-600' xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24'>
                     <circle className='opacity-25' cx='12' cy='12' r='10' stroke='currentColor' strokeWidth='4'></circle>
                     <path className='opacity-75' fill='currentColor' d='M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z'></path>
                   </svg>
@@ -150,7 +150,7 @@ const UsersTab = ({ projects, t, setUsers, users = [], isLoading = {}, visiblePa
                 </>
               ) : (
                 <>
-                  <FiUpload className='w-4 h-4 mr-2 text-green-600' />
+                  <FiUpload className='w-4 h-4 text-green-600' />
                   {t('importUsers')}
                 </>
               )}
@@ -158,8 +158,8 @@ const UsersTab = ({ projects, t, setUsers, users = [], isLoading = {}, visiblePa
             <input type='file' ref={fileInputRef} accept='.xlsx,.xls' className='hidden' onChange={handleUploadExcel} disabled={isUploading} />
 
             {/* New User Button */}
-            <button onClick={() => setShowNewUserModal(true)} className='flex items-center cursor-pointer bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg text-sm transition-all duration-200 shadow-md hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-300'>
-              <FiPlus className='w-4 h-4 mr-2' />
+            <button onClick={() => {setShowNewUserModal(true) ; handleGeneratePassword()}} className='flex gap-2 items-center cursor-pointer bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg text-sm transition-all duration-200 shadow-md hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-300'>
+              <FiPlus className='w-4 h-4  ' />
               <span>{t('newUser')}</span>
             </button>
           </div>

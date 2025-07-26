@@ -21,6 +21,8 @@ import UsersTab from '../../components/atoms/UsersTab';
 // Translation objects
 const translations = {
   en: {
+    perPage: 'per page',
+    allProjects: 'All projects',
     downloadTemplate: 'Download Template',
     uploading: 'Uploading',
     importUsers: 'Import Users',
@@ -207,6 +209,8 @@ const translations = {
     exportError: 'An error occurred while exporting data',
   },
   ar: {
+    perPage: 'لكل صفحة',
+    allProjects: 'جميع المشاريع',
     downloadTemplate: 'تحميل القالب',
     uploading: 'جاري الرفع',
     importUsers: 'استيراد المستخدمين',
@@ -632,6 +636,9 @@ export default function DashboardPage() {
   const [language, setLanguage] = useState('ar');
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+  const [selectedProjectId, setSelectedProjectId] = useState('all');
+  const [selectedFormId, setSelectedFormId] = useState('all');
+  const [selectedLimit, setSelectedLimit] = useState(10);
 
   const t = key => translations[language][key] || key;
 
@@ -714,6 +721,13 @@ export default function DashboardPage() {
     }
   }, [activeTab, user, authLoading]);
 
+  const queryParams = new URLSearchParams({
+    page: currentPage.toString(),
+    limit: selectedLimit.toString(),
+    ...(selectedFormId !== 'all' && { form_id: selectedFormId }),
+    ...(selectedProjectId !== 'all' && { project_id: selectedProjectId }),
+  });
+
   const fetchData = async () => {
     try {
       setIsLoading(prev => ({ ...prev, [activeTab]: true }));
@@ -722,7 +736,7 @@ export default function DashboardPage() {
         const formsRes = await api.get('/forms');
         setForms(formsRes.data.data || formsRes.data);
       } else if (activeTab === 'submissions') {
-        const submissionsRes = await api.get(`/form-submissions?page=${currentPage}`);
+        const submissionsRes = await api.get(`/form-submissions?${queryParams}`);
         setSubmissions(submissionsRes.data.data || submissionsRes.data);
         setTotalPages(submissionsRes.data.lastPage || 1);
       } else if (activeTab === 'users') {
@@ -737,6 +751,12 @@ export default function DashboardPage() {
       setIsLoading(prev => ({ ...prev, [activeTab]: false }));
     }
   };
+
+  useEffect(() => {
+    if (activeTab === 'submissions') {
+      fetchData();
+    }
+  }, [selectedFormId, selectedLimit, selectedProjectId, currentPage]);
 
   const [projects, setProjects] = useState([]);
 
@@ -908,7 +928,6 @@ export default function DashboardPage() {
   const handleCreateUser = async userData => {
     try {
       const response = await api.post('/auth/create-user', userData);
-      console.log(response.data, users);
       setUsers([response.data, ...users]);
       setShowNewUserModal(false);
       resetUserForm();
@@ -1010,12 +1029,13 @@ export default function DashboardPage() {
     }
     setShowNewFieldModal(true);
   };
-  const [selectedFormId, setSelectedFormId] = useState('all');
 
   const exportToExcel = async () => {
     try {
       setIsExporting(true);
-      const response = await api.get('/form-submissions?limit=1000');
+      // const response = await api.get('/form-submissions?limit=1000');
+      const response = await api.get(`/form-submissions?${queryParams}`);
+
       let dataToExport = response.data.data;
       if (selectedFormId !== 'all') {
         dataToExport = dataToExport.filter(sub => sub.form_id === selectedFormId);
@@ -1060,9 +1080,7 @@ export default function DashboardPage() {
 
   const renderSubmissionTable = () => {
     if (isLoading.submissions) return <SkeletonLoader count={5} />;
-
-    const filteredSubmissions = selectedFormId === 'all' ? submissions : submissions.filter(sub => sub.form_id === selectedFormId);
-
+    const filteredSubmissions = submissions;
     if (filteredSubmissions.length === 0) return <div className='text-center py-8 text-gray-500'>{t('noSubmissions')}</div>;
 
     const allKeys = filteredSubmissions.reduce((keys, submission) => {
@@ -1082,8 +1100,9 @@ export default function DashboardPage() {
               <tr>
                 <th className='px-6 py-3 rtl:text-right ltr:text-left text-xs font-medium text-gray-500 uppercase tracking-wider'>{t('status')}</th>
                 <th className='px-6 py-3 rtl:text-right ltr:text-left text-xs font-medium text-gray-500 uppercase tracking-wider'>{t('national_id')}</th>
+                <th className='px-6 py-3 rtl:text-right ltr:text-left text-xs font-medium text-gray-500 uppercase tracking-wider'>{t('project')}</th>
                 {allKeys.map(key => (
-                  <th key={key} className='px-6 py-3 rtl:text-right ltr:text-left text-xs font-medium text-gray-500 uppercase tracking-wider'>
+                  <th key={key} className={` ${key?.endsWith('_asset') && 'hidden'}  px-6 py-3 rtl:text-right ltr:text-left text-xs font-medium text-gray-500 uppercase tracking-wider`}>
                     {key}
                   </th>
                 ))}
@@ -1104,11 +1123,12 @@ export default function DashboardPage() {
                     </div>
                   </td>
                   <td className='px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900'>{submission?.user?.email}</td>
+                  <td className=' px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900'>{submission?.user?.project?.name || 'N/A'}</td>
 
                   {allKeys.map(key => {
                     const value = submission.answers[key];
                     let content = 'N/A';
-
+                    if (key.endsWith('_asset')) return null;
                     if (value) {
                       if (typeof value === 'string' && value.startsWith('upload')) {
                         content = (
@@ -1534,23 +1554,36 @@ export default function DashboardPage() {
                 </p>
               </div>
 
-              <div className='flex items-center gap-4'>
-                {/* Form ID Filter Dropdown */}
-                <div className='flex items-center gap-2'>
-                  <label htmlFor='formFilter' className='text-sm text-gray-600'>
-                    {t('filterByForm')}:
-                  </label>
-                  <select id='formFilter' value={selectedFormId} onChange={e => setSelectedFormId(e.target.value)} className=' truncate !w-[150px] !max-w-fit border border-gray-300 rounded-md px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500'>
-                    <option value='all'>{t('allForms')}</option>
-                    {Array.from(new Set(submissions.map(s => s.form_id))).map(formId => (
-                      <option className='max-w-[100px] w-full truncate ' key={formId} value={formId}>
-                        {forms.find(e => e.id == formId)?.title || 'unKnown'}
-                      </option>
-                    ))}
-                  </select>
-                </div>
+              {/* Form ID Filter Dropdown */}
+              <div className='flex flex-wrap items-center gap-2'>
+                <select id='formFilter' value={selectedFormId} onChange={e => setSelectedFormId(e.target.value)} className=' truncate !w-[150px] !max-w-fit border border-gray-300 rounded-md px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500'>
+                  <option value='all'>{t('allForms')}</option>
+                  {Array.from(new Set(submissions.map(s => s.form_id))).map(formId => (
+                    <option className='max-w-[100px] w-full truncate ' key={formId} value={formId}>
+                      {forms.find(e => e.id == formId)?.title || 'unKnown'}
+                    </option>
+                  ))}
+                </select>
 
-                <button onClick={exportToExcel} disabled={isExporting} className='flex items-center space-x-1 bg-green-600 hover:bg-green-700 text-white px-3 py-1.5 rounded-md text-sm transition-colors cursor-pointer disabled:opacity-50'>
+                <select value={selectedProjectId} onChange={e => setSelectedProjectId(e.target.value)} className='truncate !w-[150px] border border-gray-300 rounded-md px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500'>
+                  <option value='all'>{t('allProjects')}</option>
+                  {projects.map(e => {
+                    return (
+                      <option key={e.id} value={e.id}>
+                        {e.name}
+                      </option>
+                    );
+                  })}
+                </select>
+
+                <select value={selectedLimit} onChange={e => setSelectedLimit(Number(e.target.value))} className='truncate !w-[150px] border border-gray-300 rounded-md px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500'>
+                  {[10, 20, 30, 40, 50, 100, 200].map(limit => (
+                    <option key={limit} value={limit}>
+                      {limit} {t('perPage')}
+                    </option>
+                  ))}
+                </select>
+                <button onClick={exportToExcel} disabled={isExporting} className='flex-none flex items-center gap-2 bg-green-600 hover:bg-green-700 text-white px-3 py-1.5 rounded-md text-sm transition-colors cursor-pointer disabled:opacity-50'>
                   <FiDownload className='h-4 w-4' />
                   <span>{isExporting ? t('exporting') : t('exportExcel')}</span>
                 </button>
@@ -1560,7 +1593,7 @@ export default function DashboardPage() {
           </div>
         )}
 
-        {activeTab === 'users' && <UsersTab setUsers={setUsers} projects={projects} t={t} users={users} isLoading={isLoading} visiblePasswords={visiblePasswords} handleShowPassword={handleShowPassword} setShowNewUserModal={setShowNewUserModal} setEditingUser={setEditingUser} resetUserForm={resetUserForm} setShowEditUserModal={setShowEditUserModal} setShowShareModal={setShowShareModal} setShowDeleteModal={setShowDeleteModal} setViewSubmission={setViewSubmission} currentUserPage={currentUserPage} setCurrentUserPage={setCurrentUserPage} totalUserPages={totalUserPages} />}
+        {activeTab === 'users' && <UsersTab handleGeneratePassword={handleGeneratePassword} setUsers={setUsers} projects={projects} t={t} users={users} isLoading={isLoading} visiblePasswords={visiblePasswords} handleShowPassword={handleShowPassword} setShowNewUserModal={setShowNewUserModal} setEditingUser={setEditingUser} resetUserForm={resetUserForm} setShowEditUserModal={setShowEditUserModal} setShowShareModal={setShowShareModal} setShowDeleteModal={setShowDeleteModal} setViewSubmission={setViewSubmission} currentUserPage={currentUserPage} setCurrentUserPage={setCurrentUserPage} totalUserPages={totalUserPages} />}
 
         {activeTab === 'projects' && <ProjectsTab t={t} />}
       </main>
