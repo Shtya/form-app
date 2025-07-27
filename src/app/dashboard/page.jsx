@@ -3,7 +3,7 @@ import { useEffect, useState } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import api, { baseImg } from '../../utils/api';
 import { DragDropContext, Droppable, Draggable } from '@hello-pangea/dnd';
-import { FiTrash2, FiEdit2, FiPlus, FiCheck, FiEye, FiUser, FiFileText, FiList, FiDownload, FiChevronLeft, FiChevronRight, FiEdit3, FiCircle, FiMaximize, FiShare2, FiEyeOff } from 'react-icons/fi';
+import { FiTrash2, FiEdit2, FiPlus, FiCheck, FiEye, FiUser, FiFileText, FiList, FiDownload, FiChevronLeft, FiChevronRight, FiEdit3, FiCircle, FiMaximize   } from 'react-icons/fi';
 import { FaAsterisk, FaEye, FaGripVertical, FaUser } from 'react-icons/fa6';
 import * as XLSX from 'xlsx';
 import { useForm } from 'react-hook-form';
@@ -1381,7 +1381,7 @@ export default function DashboardPage() {
                               }}
                               className='p-1.5 cursor-pointer text-gray-500 hover:text-red-600 hover:bg-red-50 rounded-full transition-colors'
                               title={t('delete')}>
-                              <FiTrash2 className='w-4 w-4' />
+                              <FiTrash2 className='w-4 ' />
                             </button>
                           </div>
                         </div>
