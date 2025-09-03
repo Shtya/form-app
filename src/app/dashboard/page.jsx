@@ -3,7 +3,7 @@ import { useEffect, useState } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import api, { baseImg } from '../../utils/api';
 import { DragDropContext, Droppable, Draggable } from '@hello-pangea/dnd';
-import { FiTrash2, FiEdit2, FiPlus, FiCheck, FiEye, FiUser, FiFileText, FiList, FiDownload, FiChevronLeft, FiChevronRight, FiEdit3, FiCircle, FiMaximize   } from 'react-icons/fi';
+import { FiTrash2, FiEdit2, FiPlus, FiCheck, FiEye, FiUser, FiFileText, FiList, FiDownload, FiChevronLeft, FiChevronRight, FiEdit3, FiCircle, FiMaximize } from 'react-icons/fi';
 import { FaAsterisk, FaEye, FaGripVertical, FaUser } from 'react-icons/fa6';
 import * as XLSX from 'xlsx';
 import { useForm } from 'react-hook-form';
@@ -1033,19 +1033,36 @@ export default function DashboardPage() {
   const exportToExcel = async () => {
     try {
       setIsExporting(true);
-      // const response = await api.get('/form-submissions?limit=1000');
       const response = await api.get(`/form-submissions?${queryParams}`);
 
       let dataToExport = response.data.data;
+      console.log(dataToExport);
+
       if (selectedFormId !== 'all') {
         dataToExport = dataToExport.filter(sub => sub.form_id === selectedFormId);
       }
-      const excelData = dataToExport.map(submission => ({
-        User: submission.user.email,
-        'Submitted At': new Date(submission.created_at).toLocaleString(),
-        Status: submission.isCheck ? t('reviewed') : t('pendingReview'),
-        ...submission.answers,
-      }));
+
+      const excelData = dataToExport.map(submission => {
+        const updatedAnswers = { ...submission.answers };
+
+        for (const [key, value] of Object.entries(updatedAnswers)) {
+          // Case 1: plain string starting with uploads
+          if (typeof value === 'string' && value.startsWith('uploads')) {
+            updatedAnswers[key] = `${process.env.NEXT_PUBLIC_BASE_URL}${value}`;
+          }
+          // Case 2: object with .url starting with uploads
+          if (typeof value === 'object' && value?.url?.startsWith('uploads')) {
+            updatedAnswers[key] = `${process.env.NEXT_PUBLIC_BASE_URL}${value.url}`;
+          }
+        }
+
+        return {
+          User: submission.user.email,
+          'Submitted At': new Date(submission.created_at).toLocaleString(),
+          Status: submission.isCheck ? t('reviewed') : t('pendingReview'),
+          ...updatedAnswers, // replaced values, no duplicates
+        };
+      });
 
       const wb = XLSX.utils.book_new();
       const ws = XLSX.utils.json_to_sheet(excelData);
