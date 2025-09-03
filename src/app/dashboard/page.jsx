@@ -1036,8 +1036,7 @@ export default function DashboardPage() {
       const response = await api.get(`/form-submissions?${queryParams}`);
 
       let dataToExport = response.data.data;
-      console.log(dataToExport);
-
+ 
       if (selectedFormId !== 'all') {
         dataToExport = dataToExport.filter(sub => sub.form_id === selectedFormId);
       }
