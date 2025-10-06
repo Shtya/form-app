@@ -21,6 +21,16 @@ import UsersTab from '../../components/atoms/UsersTab';
 // Translation objects
 const translations = {
   en: {
+    searchUsers: 'Search users...',
+    enterValidLimit: 'Please enter a valid limit',
+    exportStarted: 'Export completed',
+    exportFailed: 'Export failed',
+    exportHint: 'Set how many users to include. Current filters (search) will be applied.',
+    limit: 'Limit',
+    currentSearch: 'Current search',
+    none: 'none',
+    cancel: 'Cancel',
+    export: 'Export',
     perPage: 'per page',
     allProjects: 'All projects',
     downloadTemplate: 'Download Template',
@@ -209,6 +219,16 @@ const translations = {
     exportError: 'An error occurred while exporting data',
   },
   ar: {
+    searchUsers: 'ابحث عن المستخدمين...',
+    enterValidLimit: 'من فضلك أدخل حدًا صالحًا',
+    exportStarted: 'تم إكمال التصدير',
+    exportFailed: 'فشل التصدير',
+    exportHint: 'حدد عدد المستخدمين المطلوب تضمينهم. سيتم تطبيق عوامل التصفية الحالية (البحث).',
+    limit: 'الحد',
+    currentSearch: 'البحث الحالي',
+    none: 'لا يوجد',
+    cancel: 'إلغاء',
+    export: 'تصدير',
     perPage: 'لكل صفحة',
     allProjects: 'جميع المشاريع',
     downloadTemplate: 'تحميل القالب',
@@ -1036,7 +1056,7 @@ export default function DashboardPage() {
       const response = await api.get(`/form-submissions?${queryParams}`);
 
       let dataToExport = response.data.data;
- 
+
       if (selectedFormId !== 'all') {
         dataToExport = dataToExport.filter(sub => sub.form_id === selectedFormId);
       }
