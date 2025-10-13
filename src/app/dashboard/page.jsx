@@ -783,7 +783,7 @@ export default function DashboardPage() {
   useEffect(() => {
     const fetchProjects = async () => {
       try {
-        const res = await api.get('/projects');
+        const res = await api.get('/projects?limit=200');
         setProjects(res.data.data); // ✅ نأخذ data فقط
       } catch (error) {
         console.error('Failed to fetch projects:', error);
