@@ -149,7 +149,7 @@ export default function ProjectsTab({ t }) {
           </button>
         </div>
 
-        <div className='space-y-1.5'>
+        <div className='space-y-1.5' style={{height: "500px" ,overflow: "auto"}}>
           {loadingpage ? (
             Array.from({ length: 4 }).map((_, i) => <div key={i} className='h-10 bg-gray-100 animate-pulse rounded-md'></div>)
           ) : projects.length > 0 ? (
