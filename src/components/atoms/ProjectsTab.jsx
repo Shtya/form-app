@@ -55,7 +55,7 @@ export default function ProjectsTab({ t }) {
   const fetchProjects = async () => {
     try {
       setLoadingpage(true);
-      const res = await api.get('/projects');
+      const res = await api.get('/projects?limit=200');
       setProjects(res.data.data);
       if (res.data.data.length > 0 && !selectedProjectId) {
         handleSelectProject(res.data.data[0]);
