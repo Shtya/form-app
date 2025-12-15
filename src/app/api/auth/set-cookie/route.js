@@ -3,8 +3,6 @@ import { NextResponse } from 'next/server';
 
 export async function POST(request) {
   const body = await request.json();
-  console.log(body);
-
   const userData = JSON.stringify(body);
 
   const response = new NextResponse(JSON.stringify({ message: 'Cookie set successfully' }), {
