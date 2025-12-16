@@ -422,7 +422,7 @@ const translations = {
 		exportSuccess: 'تم تصدير البيانات بنجاح',
 		exportError: 'حدث خطأ أثناء تصدير البيانات',
 		assignedProject: 'المشروع المعيّن',
-		supervisor: 'مسؤب عن حساب',
+		supervisor: 'مسؤول عن مشروع',
 		supervisorDashboard: 'لوحة تحكم المشرف',
 		viewAssignedProject: 'عرض المشروع المعيّن',
 		assignedForm: 'النموذج المعيّن',
@@ -929,7 +929,7 @@ export default function DashboardPage() {
 		try {
 			const fieldKey = fieldData.label ? fieldData.label.toLowerCase().replace(/\s+/g, '-') : null;
 			// التحقق إن كان المفتاح موجود مسبقًا
-			const keyExists = selectedForm.fields.some(field => field.key === fieldKey);
+			const keyExists = selectedForm?.fields?.some(field => field.key === fieldKey);
 
 			if (keyExists && !editField) {
 				toast.error(t('fieldKeyAlreadyExists') || 'Cannot add field: key already exists.');
@@ -941,7 +941,7 @@ export default function DashboardPage() {
 				key: fieldKey,
 				options: fieldData.type === 'radio' || fieldData.type === 'checklist' || fieldData.type === 'select' ? tempOptions.split(',').map(opt => opt.trim()) : [],
 			};
-			if (!editField) fieldToAdd['order'] = selectedForm.fields.length + 1;
+			if (!editField) fieldToAdd['order'] = selectedForm.fields?.length + 1;
 
 			let updatedFields;
 			if (editField) {
@@ -1664,7 +1664,7 @@ export default function DashboardPage() {
 
 				{activeTab === 'users' && <UsersTab handleGeneratePassword={handleGeneratePassword} setUsers={setUsers} projects={projects} t={t} users={users} isLoading={isLoading} visiblePasswords={visiblePasswords} handleShowPassword={handleShowPassword} setShowNewUserModal={setShowNewUserModal} setEditingUser={setEditingUser} resetUserForm={resetUserForm} setShowEditUserModal={setShowEditUserModal} setShowShareModal={setShowShareModal} setShowDeleteModal={setShowDeleteModal} setViewSubmission={setViewSubmission} currentUserPage={currentUserPage} setCurrentUserPage={setCurrentUserPage} totalUserPages={totalUserPages} />}
 
-				{activeTab === 'projects' && <ProjectsTab t={t} />}
+				{activeTab === 'projects' && <ProjectsTab user={user} t={t} />}
 			</main>
 
 			{/* Modals */}
