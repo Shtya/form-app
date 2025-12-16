@@ -37,7 +37,7 @@ function formatValue(value) {
 }
 
 
-export default function ProjectsTab({ t }) {
+export default function ProjectsTab({ user , t }) {
   const [projects, setProjects] = useState([]);
   const [loadingpage, setLoadingpage] = useState(true);
   const [selectedProjectId, setSelectedProjectId] = useState(null);
@@ -143,10 +143,10 @@ export default function ProjectsTab({ t }) {
       <aside className='w-64 !h-full bg-white border border-gray-200 rounded-xl shadow-sm p-4 space-y-4'>
         <div className='flex justify-between items-center pb-2 border-b border-gray-100'>
           <h2 className='font-semibold text-lg text-gray-800 capitalize '>{t('projects')}</h2>
-          <button onClick={() => setShowNewProjectModal(true)} title={t('createNewForm')} className=' cursor-pointer hover:scale-[1.03] flex items-center gap-1 bg-indigo-600 text-white px-3 py-1.5 rounded-md hover:bg-indigo-700 transition text-sm font-medium'>
+          {user?.admin && <button onClick={() => setShowNewProjectModal(true)} title={t('createNewForm')} className=' cursor-pointer hover:scale-[1.03] flex items-center gap-1 bg-indigo-600 text-white px-3 py-1.5 rounded-md hover:bg-indigo-700 transition text-sm font-medium'>
             <Plus size={16} className='' />
             {t('create')}
-          </button>
+          </button>}
         </div>
 
         <div className='space-y-1.5' style={{height: "500px" ,overflow: "auto"}}>

@@ -102,7 +102,7 @@ export default function Page() {
               <p className='text-gray-500 mt-2'>{translations[lang].signInPrompt}</p>
             </div>
 
-            <form onSubmit={handleSubmit(onSubmit)} className='space-y-6'>
+            <div className='space-y-6'>
               {/* Email */}
               <div>
                 <label className='block text-sm font-medium text-gray-700 mb-1'>{translations[lang].identity_document}</label>
@@ -124,7 +124,7 @@ export default function Page() {
               </div>
 
               {/* Submit */}
-              <motion.button whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }} type='submit' disabled={isLoading} className={`cursor-pointer w-full py-3 rounded-lg text-white font-medium transition-all ${isLoading ? 'bg-indigo-400 cursor-not-allowed' : 'bg-indigo-600 hover:bg-indigo-700 focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500'}`}>
+              <motion.button  onClick={handleSubmit(onSubmit)}  whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }} disabled={isLoading} className={`cursor-pointer w-full py-3 rounded-lg text-white font-medium transition-all ${isLoading ? 'bg-indigo-400 cursor-not-allowed' : 'bg-indigo-600 hover:bg-indigo-700 focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500'}`}>
                 {isLoading ? (
                   <span className='flex items-center justify-center'>
                     <svg className='animate-spin h-5 w-5 mr-2' viewBox='0 0 24 24'>
@@ -137,7 +137,7 @@ export default function Page() {
                   translations[lang].signIn
                 )}
               </motion.button>
-            </form>
+            </div>
           </div>
         </div>
       </motion.div>
