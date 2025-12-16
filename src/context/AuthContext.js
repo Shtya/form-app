@@ -67,10 +67,8 @@ export function AuthProvider({ children }) {
         method: 'POST',
       });
       toast.success('Logged out successfully');
-      // await api.post('/auth/logout');
-    } catch (error) {
-      // toast.error('Failed to logout properly');
-    } finally {
+     } catch (error) {
+     } finally {
       localStorage.removeItem('accessToken');
       localStorage.removeItem('refreshToken');
       localStorage.removeItem('user');
