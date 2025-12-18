@@ -157,11 +157,14 @@ export default function FormSubmissionPage() {
 				const latestSubmission = submissionsRes.data[0];
 				const values = { ...latestSubmission.answers };
 				sortedFields.forEach(field => {
+					if (field.type === 'date' && values[field.key]) {
+						values[field.key] = new Date(values[field.key]);
+					}
+
+					// existing file logic
 					if (field.type === 'file' && values[field.key]) {
 						const asset = (assetsRes.data?.data || []).find(a => a.url === values[field.key]);
-						if (asset) {
-							values[`${field.key}_asset`] = asset;
-						}
+						if (asset) values[`${field.key}_asset`] = asset;
 					}
 				});
 				reset(values);
@@ -253,19 +256,33 @@ export default function FormSubmissionPage() {
 
 	const onSubmit = async data => {
 		try {
+			const payload = { ...data };
+
+			// ✅ ADD THIS: format dates
+			activeForm.fields.forEach(field => {
+  if (field.type === 'date' && payload[field.key]) {
+    const d = new Date(payload[field.key]);
+
+    // ✅ local YYYY-MM-DD (بدون UTC)
+    const yyyy = d.getFullYear();
+    const mm = String(d.getMonth() + 1).padStart(2, '0');
+    const dd = String(d.getDate()).padStart(2, '0');
+
+    payload[field.key] = `${yyyy}-${mm}-${dd}`;
+  }
+});
+
 			if (submissions.length > 0) {
-				// Update existing submission
 				await api.patch(`/form-submissions/${submissions[0].id}`, {
-					answers: data,
+					answers: payload,          // ✅ USE payload not data
 					form_id: activeForm?.id,
-					isCheck: false, // Reset verification status when editing
+					isCheck: false,
 				});
 				toast.success('Submission updated successfully');
 			} else {
-				// Create new submission
 				await api.post('/form-submissions', {
 					form_id: activeForm.id,
-					answers: data,
+					answers: payload,          // ✅ USE payload not data
 				});
 				toast.success('Submission created successfully');
 			}
@@ -306,8 +323,11 @@ export default function FormSubmissionPage() {
 			case 'date':
 				return (
 					<Flatpickr
-						value={fieldValue}
-						onChange={([date]) => setValue(field.key, date)}
+						value={fieldValue ? new Date(fieldValue) : null}
+						onChange={([date]) =>
+  setValue(field.key, date, { shouldDirty: true, shouldValidate: true })
+}
+
 						options={{
 							dateFormat: 'Y-m-d',
 							allowInput: true,
