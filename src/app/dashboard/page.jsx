@@ -22,6 +22,10 @@ import TemplatesTab from '../../components/atoms/TemplatesTab';
 // Translation objects
 const translations = {
 	en: {
+		"copyUrl": "Copy URL",
+		"fileDeleted": "File deleted successfully",
+		"deleteError": "Failed to delete file",
+		"upload": "Upload",
 		"uploadExcel": "Upload Excel",
 		"fileManager": "File Manager",
 		"yourFiles": "Your Files",
@@ -235,6 +239,10 @@ const translations = {
 		no_forms_available: 'No forms available',
 	},
 	ar: {
+		"copyUrl": "نسخ الرابط",
+		"fileDeleted": "تم حذف الملف بنجاح",
+		"deleteError": "فشل في حذف الملف",
+		"upload": "رفع",
 		"uploadExcel": "رفع إكسل",
 		"fileManager": "مدير الملفات",
 		"yourFiles": "ملفاتك",
@@ -708,7 +716,7 @@ export default function DashboardPage() {
 	const [userAssets, setUserAssets] = useState([]);
 	const [uploadingFile, setUploadingFile] = useState(false);
 	const fileUploadInputRef = useRef(null);
-
+	const [deletingSubmissions, setDeletingSubmissions] = useState({});
 	const t = key => translations[language][key] || key;
 
 	useEffect(() => {
@@ -1194,40 +1202,123 @@ export default function DashboardPage() {
 			});
 
 			// Create example row
+			const getExampleValue = (field) => {
+				const key = field.key?.toLowerCase() || '';
+				const label = field.label?.toLowerCase() || '';
+
+				switch (field.type) {
+					case 'text':
+						if (key.includes('name') || label.includes('اسم')) return 'Ahmed Al-Qahtani';
+						if (key.includes('nationality') || label.includes('الجنسية')) return 'Saudi';
+						if (key.includes('religion') || label.includes('الديانة')) return 'Islam';
+						if (key.includes('city') || label.includes('المدينة')) return 'Riyadh';
+						if (key.includes('address') || label.includes('العنوان')) return 'King Fahd Road, Riyadh';
+						if (key.includes('iban')) return 'SA4420000001234567891234';
+						if (key.includes('bank')) return 'Saudi National Bank';
+						if (key.includes('project')) return 'NEOM Project';
+						if (key.includes('passport')) return 'A12345678';
+						return 'Sample text';
+
+					case 'email':
+						return 'employee@example.com';
+
+					case 'phone':
+						return '0501234567';
+
+					case 'number':
+						if (key.includes('age') || label.includes('العمر')) return '30';
+						return '1';
+
+					case 'date':
+						return '2024-01-01';
+
+					case 'radio':
+					case 'select':
+						return field.options?.[0] || '';
+
+					case 'checkbox':
+						return 'true';
+
+					case 'file':
+						return 'sample-file.pdf';
+
+					case 'textarea':
+						return 'This is a sample long text address or description';
+
+					default:
+						return '';
+				}
+			};
+
 			const exampleRow = ['1'];
 			form.fields?.forEach(field => {
-				if (field.type === 'select' || field.type === 'radio') {
-					exampleRow.push(field.options?.[0] || '');
-				} else if (field.type === 'checkbox') {
-					exampleRow.push('true');
-				} else if (field.type === 'date') {
-					exampleRow.push('2024-01-01');
-				} else {
-					exampleRow.push('example value');
-				}
+				exampleRow.push(getExampleValue(field));
 			});
 
 			const wsData = [headers, exampleRow];
 
 			// Create forms reference sheet
-			const formSheetData = [['ID', 'Form Title']];
+			const formSheetData = [['Form ID', 'Form Title']];
 			forms.forEach(f => {
 				formSheetData.push([f.id, f.title]);
 			});
 
+			// Create users reference sheet - Fetch all users for the form's project
+			const userSheetData = [['User ID', 'National ID', 'Project Name', 'Project ID']];
+
+			try {
+				// Fetch all users (you might want to paginate or filter by project)
+				const usersRes = await api.get('/users?limit=1000'); // Adjust limit as needed
+				const allUsers = usersRes.data.data || usersRes.data || [];
+
+				// Filter users by project if form has a project association
+				// Or you can show all users and let the admin choose
+				allUsers.forEach(user => {
+					userSheetData.push([
+						user.id,
+						user.email || '', // National ID from email field
+						user.project?.name || 'N/A',
+						user.projectId || 'N/A'
+					]);
+				});
+			} catch (error) {
+				console.error('Failed to fetch users for template:', error);
+				// Add a placeholder row if fetch fails
+				userSheetData.push(['1', '1234567890', 'Sample Project', '1']);
+			}
+
 			const wb = XLSX.utils.book_new();
 			const templateSheet = XLSX.utils.aoa_to_sheet(wsData);
 			const formSheet = XLSX.utils.aoa_to_sheet(formSheetData);
+			const userSheet = XLSX.utils.aoa_to_sheet(userSheetData);
 
-			// Set column widths
-			const colWidths = [{ wch: 25 }]; // Email column
+			// Set column widths for template sheet
+			const templateColWidths = [{ wch: 25 }]; // User ID column
 			form.fields?.forEach(() => {
-				colWidths.push({ wch: 20 });
+				templateColWidths.push({ wch: 20 });
 			});
-			templateSheet['!cols'] = colWidths;
+			templateSheet['!cols'] = templateColWidths;
+
+			// Set column widths for forms sheet
+			const formColWidths = [
+				{ wch: 10 }, // ID
+				{ wch: 30 }  // Form Title
+			];
+			formSheet['!cols'] = formColWidths;
+
+			// Set column widths for users sheet
+			const userColWidths = [
+				{ wch: 10 }, // User ID
+				{ wch: 15 }, // National ID
+				{ wch: 30 }, // Project Name
+				{ wch: 10 }  // Project ID
+			];
+			userSheet['!cols'] = userColWidths;
 
 			XLSX.utils.book_append_sheet(wb, templateSheet, 'Template');
 			XLSX.utils.book_append_sheet(wb, formSheet, 'Forms');
+			XLSX.utils.book_append_sheet(wb, userSheet, 'Users');
+
 			XLSX.writeFile(wb, `${form.title || 'form'}_template.xlsx`);
 			toast.success(t('templateDownloaded') || 'Template downloaded successfully');
 		} catch (error) {
@@ -1467,6 +1558,31 @@ export default function DashboardPage() {
 	};
 
 	const renderSubmissionTable = () => {
+		// Add a state for tracking which submissions are being deleted
+
+
+		const handleDeleteSubmission = async (submissionId) => {
+			if (!confirm(t('confirmDeleteSubmission') || 'Are you sure you want to delete this submission?')) {
+				return;
+			}
+
+			// Set loading for this specific submission
+			setDeletingSubmissions(prev => ({ ...prev, [submissionId]: true }));
+
+			try {
+				await api.delete(`/form-submissions/${submissionId}`);
+				// Remove from local state
+				setSubmissions(submissions.filter(s => s.id !== submissionId));
+				toast.success(t('submissionDeleted'));
+			} catch (error) {
+				console.error('Failed to delete submission:', error);
+				toast.error(error.response?.data?.message || t('deleteSubmissionError'));
+			} finally {
+				// Clear loading state
+				setDeletingSubmissions(prev => ({ ...prev, [submissionId]: false }));
+			}
+		};
+
 		if (isLoading.submissions) return <SkeletonLoader count={5} />;
 		const filteredSubmissions = submissions;
 		if (filteredSubmissions.length === 0) return <div className='text-center py-8 text-gray-500'>{t('noSubmissions')}</div>;
@@ -1504,14 +1620,28 @@ export default function DashboardPage() {
 									<td className='px-6 py-4 whitespace-nowrap'>
 										<div className='flex items-center gap-2'>
 											<label className='relative flex items-center gap-2 cursor-pointer'>
-												<input type='checkbox' checked={submission.isCheck} onChange={() => markSubmissionReviewed(submission.id, !submission.isCheck)} className='absolute opacity-0 h-0 w-0' />
-												<div className={`relative w-5 h-5 border-2 rounded-md flex items-center justify-center transition-all duration-200 ${submission.isCheck ? 'bg-indigo-600 border-indigo-700' : 'bg-white border-gray-300 hover:border-gray-400'}`}>{submission.isCheck && <FiCheck className='w-3.5 h-3.5 text-white' strokeWidth={3} />}</div>
-												<span className={`ml-2 text-sm ${submission.isCheck ? 'text-indigo-700 font-medium' : 'text-gray-500'}`}>{submission.isCheck ? t('reviewed') : t('markReviewed')}</span>
+												<input
+													type='checkbox'
+													checked={submission.isCheck}
+													onChange={() => markSubmissionReviewed(submission.id, !submission.isCheck)}
+													className='absolute opacity-0 h-0 w-0'
+													disabled={deletingSubmissions[submission.id]} // Disable when deleting
+												/>
+												<div className={`relative w-5 h-5 border-2 rounded-md flex items-center justify-center transition-all duration-200 ${submission.isCheck ? 'bg-indigo-600 border-indigo-700' : 'bg-white border-gray-300 hover:border-gray-400'} ${deletingSubmissions[submission.id] ? 'opacity-50' : ''}`}>
+													{submission.isCheck && <FiCheck className='w-3.5 h-3.5 text-white' strokeWidth={3} />}
+												</div>
+												<span className={`ml-2 text-sm ${submission.isCheck ? 'text-indigo-700 font-medium' : 'text-gray-500'} ${deletingSubmissions[submission.id] ? 'opacity-50' : ''}`}>
+													{submission.isCheck ? t('reviewed') : t('markReviewed')}
+												</span>
 											</label>
 										</div>
 									</td>
-									<td className='px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900'>{submission?.user?.email}</td>
-									<td className=' px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900'>{submission?.user?.project?.name || 'N/A'}</td>
+									<td className={`px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 ${deletingSubmissions[submission.id] ? 'opacity-50' : ''}`}>
+										{submission?.user?.email}
+									</td>
+									<td className={`px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 ${deletingSubmissions[submission.id] ? 'opacity-50' : ''}`}>
+										{submission?.user?.project?.name || 'N/A'}
+									</td>
 
 									{allKeys.map(key => {
 										const value = submission.answers[key];
@@ -1520,9 +1650,17 @@ export default function DashboardPage() {
 										if (value) {
 											if (typeof value === 'string' && value.startsWith('upload')) {
 												content = (
-													<div className='relative group w-10 h-10'>
-														<img src={baseImg + value} alt='Uploaded' className='h-full w-full rounded object-cover border border-gray-300 cursor-pointer' onClick={() => setPreviewImg(baseImg + value)} />
-														<div onClick={() => setPreviewImg(baseImg + value)} className='absolute inset-0 bg-black/50 text-white flex items-center justify-center rounded opacity-0 group-hover:opacity-100 transition-opacity duration-200 cursor-pointer'>
+													<div className={`relative group w-10 h-10 ${deletingSubmissions[submission.id] ? 'opacity-50' : ''}`}>
+														<img
+															src={baseImg + value}
+															alt='Uploaded'
+															className='h-full w-full rounded object-cover border border-gray-300 cursor-pointer'
+															onClick={() => !deletingSubmissions[submission.id] && setPreviewImg(baseImg + value)}
+														/>
+														<div
+															onClick={() => !deletingSubmissions[submission.id] && setPreviewImg(baseImg + value)}
+															className='absolute inset-0 bg-black/50 text-white flex items-center justify-center rounded opacity-0 group-hover:opacity-100 transition-opacity duration-200 cursor-pointer'
+														>
 															<FiMaximize className='w-5 h-5' />
 														</div>
 													</div>
@@ -1530,16 +1668,24 @@ export default function DashboardPage() {
 											} else if (typeof value === 'object' && value !== null) {
 												if (value.url) {
 													content = (
-														<div className='relative group w-10 h-10'>
-															<img src={baseImg + value.url} alt='Uploaded' className='h-full w-full rounded object-cover border border-gray-300 cursor-pointer' onClick={() => setPreviewImg(value.url)} />
-															<div onClick={() => setPreviewImg(value.url)} className='absolute inset-0 bg-black/50 text-white flex items-center justify-center rounded opacity-0 group-hover:opacity-100 transition-opacity duration-200 cursor-pointer'>
+														<div className={`relative group w-10 h-10 ${deletingSubmissions[submission.id] ? 'opacity-50' : ''}`}>
+															<img
+																src={baseImg + value.url}
+																alt='Uploaded'
+																className='h-full w-full rounded object-cover border border-gray-300 cursor-pointer'
+																onClick={() => !deletingSubmissions[submission.id] && setPreviewImg(value.url)}
+															/>
+															<div
+																onClick={() => !deletingSubmissions[submission.id] && setPreviewImg(value.url)}
+																className='absolute inset-0 bg-black/50 text-white flex items-center justify-center rounded opacity-0 group-hover:opacity-100 transition-opacity duration-200 cursor-pointer'
+															>
 																<FiMaximize className='w-5 h-5' />
 															</div>
 														</div>
 													);
 												} else {
 													content = (
-														<ul className='list-disc list-inside space-y-1 text-xs text-gray-700'>
+														<ul className={`list-disc list-inside space-y-1 text-xs text-gray-700 ${deletingSubmissions[submission.id] ? 'opacity-50' : ''}`}>
 															{Object.entries(value).map(([k, v]) => (
 																<li key={k}>
 																	<span className='font-medium'>{k}:</span> {String(v)}
@@ -1569,16 +1715,30 @@ export default function DashboardPage() {
 										}
 
 										return (
-											<td key={key} className='px-6 py-4 whitespace-nowrap text-sm text-gray-600'>
+											<td key={key} className={`px-6 py-4 whitespace-nowrap text-sm text-gray-600 ${deletingSubmissions[submission.id] ? 'opacity-50' : ''}`}>
 												{content}
 											</td>
 										);
 									})}
-									<td className='px-6 py-4 whitespace-nowrap text-sm text-gray-500'>{new Date(submission.created_at).toLocaleString()}</td>
+									<td className={`px-6 py-4 whitespace-nowrap text-sm text-gray-500 ${deletingSubmissions[submission.id] ? 'opacity-50' : ''}`}>
+										{new Date(submission.created_at).toLocaleString()}
+									</td>
 
-									<td className='px-6 py-4 whitespace-nowrap text-sm text-gray-500 space-x-2'>
-										<button onClick={() => setShowDeleteModal({ show: true, id: submission.id, type: 'submission' })} className='text-red-600 hover:text-red-900 cursor-pointer'>
-											<FiTrash2 className='h-4 w-4' />
+									<td className='px-6 py-4 whitespace-nowrap text-sm text-gray-500'>
+										<button
+											onClick={() => handleDeleteSubmission(submission.id)}
+											disabled={deletingSubmissions[submission.id]}
+											className={`text-red-600 hover:text-red-900 cursor-pointer flex items-center justify-center ${deletingSubmissions[submission.id] ? 'opacity-50 cursor-not-allowed' : ''}`}
+											title={t('delete')}
+										>
+											{deletingSubmissions[submission.id] ? (
+												<svg className="animate-spin h-4 w-4 text-red-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+													<circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+													<path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+												</svg>
+											) : (
+												<FiTrash2 className='h-4 w-4' />
+											)}
 										</button>
 									</td>
 								</tr>
@@ -1587,7 +1747,11 @@ export default function DashboardPage() {
 					</table>
 				</div>
 				<div dir='ltr' className='flex items-center justify-center mt-8 space-x-1'>
-					<button onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))} disabled={currentPage === 1} className='p-2 !rounded-full w-[30px] h-[30px] flex items-center justify-center border border-gray-300  text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50'>
+					<button
+						onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+						disabled={currentPage === 1 || Object.values(deletingSubmissions).some(v => v)}
+						className='p-2 !rounded-full w-[30px] h-[30px] flex items-center justify-center border border-gray-300  text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50'
+					>
 						<FiChevronLeft className='h-4 w-4' />
 					</button>
 
@@ -1604,13 +1768,22 @@ export default function DashboardPage() {
 						}
 
 						return (
-							<button key={pageNum} onClick={() => setCurrentPage(pageNum)} className={`!rounded-full w-[30px] h-[30px] flex items-center justify-center text-sm ${currentPage === pageNum ? 'bg-indigo-600 text-white' : 'bg-white text-gray-700 hover:bg-gray-100'}`}>
+							<button
+								key={pageNum}
+								onClick={() => setCurrentPage(pageNum)}
+								disabled={Object.values(deletingSubmissions).some(v => v)}
+								className={`!rounded-full w-[30px] h-[30px] flex items-center justify-center text-sm ${currentPage === pageNum ? 'bg-indigo-600 text-white' : 'bg-white text-gray-700 hover:bg-gray-100'} ${Object.values(deletingSubmissions).some(v => v) ? 'opacity-50 cursor-not-allowed' : ''}`}
+							>
 								{pageNum}
 							</button>
 						);
 					})}
 
-					<button onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))} disabled={currentPage === totalPages} className='p-2 border border-gray-300 !rounded-full w-[30px] h-[30px] flex items-center justify-center text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50'>
+					<button
+						onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
+						disabled={currentPage === totalPages || Object.values(deletingSubmissions).some(v => v)}
+						className='p-2 border border-gray-300 !rounded-full w-[30px] h-[30px] flex items-center justify-center text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50'
+					>
 						<FiChevronRight className='h-4 w-4' />
 					</button>
 				</div>
@@ -1618,6 +1791,23 @@ export default function DashboardPage() {
 		);
 	};
 
+	const handleDeleteAsset = async (assetId) => {
+		if (!confirm(t('confirmDelete') || 'Are you sure you want to delete this file?')) {
+			return;
+		}
+
+		try {
+			await api.delete(`/assets/${assetId}`);
+
+			// Remove from local state
+			setUserAssets(prev => prev.filter(asset => asset.id !== assetId));
+
+			toast.success(t('fileDeleted') || 'File deleted successfully');
+		} catch (error) {
+			console.error('Failed to delete asset:', error);
+			toast.error(t('deleteError') || 'Failed to delete file');
+		}
+	};
 	return (
 		<div className='min-h-screen bg-gradient-to-br from-gray-50 to-gray-100' dir={language === 'ar' ? 'rtl' : 'ltr'}>
 			<header className='bg-white shadow-sm sticky top-0 z-40'>
@@ -1771,15 +1961,6 @@ export default function DashboardPage() {
 												</div>
 
 												<div className='flex items-center gap-2'>
-													{/* <button
-														onClick={e => {
-															e.stopPropagation();
-															toggleFormActive(form.id, form.isActive);
-														}}
-														title={form.isActive ? t('deactivateForm') : t('activateForm')}
-														className={`relative cursor-pointer inline-flex h-6 w-11 items-center rounded-full transition-colors  ${form.isActive ? 'bg-green-500' : 'bg-gray-300'}`}>
-														<span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform  ${form.isActive ? ' rtl:-translate-x-6 ltr:translate-x-6' : ' rtl:-translate-x-1 ltr:translate-x-1'}`} />
-													</button> */}
 
 													<div className='flex items-center gap-1'>
 														<button
@@ -1833,10 +2014,10 @@ export default function DashboardPage() {
 
 											<div className='flex justify-between items-center mt-3 pt-3 border-t border-gray-100'>
 												<div className='flex items-center justify-center gap-2' >
-												<span className={`text-xs px-2 py-1 rounded-full ${form.isActive ? 'bg-green-100 text-green-800' : 'bg-indigo-100 text-indigo-800'}`}>
-													{form.fields?.length || 0} {form.fields?.length === 1 ? t('field') : t('fields')}
-												</span>
-												<span className='inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-gray-100 text-gray-700 text-nowrap'>ID: {form.id}</span>
+													<span className={`text-xs px-2 py-1 rounded-full ${form.isActive ? 'bg-green-100 text-green-800' : 'bg-indigo-100 text-indigo-800'}`}>
+														{form.fields?.length || 0} {form.fields?.length === 1 ? t('field') : t('fields')}
+													</span>
+													<span className='inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-gray-100 text-gray-700 text-nowrap'>ID: {form.id}</span>
 
 												</div>
 												<span className='text-xs text-gray-500'>
@@ -2458,6 +2639,7 @@ export default function DashboardPage() {
 				title={t('fileManager') || 'File Manager'}
 				show={showFileManagerModal}
 				onClose={() => setShowFileManagerModal(false)}
+				cn={"!max-w-2xl"}
 			>
 				<div className='space-y-6'>
 					<div>
@@ -2498,32 +2680,46 @@ export default function DashboardPage() {
 											<img
 												src={baseImg + asset.url}
 												alt={asset.filename}
-												className='h-[80px] mx-auto w-full object-contain rounded'
+												className=' bg-gray-200 h-full mx-auto w-full object-contain rounded'
 											/>
-											{/* Copy button on hover */}
-											<button
-												onClick={() => copyFileUrl(asset.url)}
-												className='absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-50 flex items-center justify-center rounded-lg transition-all duration-200 opacity-0 group-hover:opacity-100 cursor-pointer'
-												title={t('copyUrl') || 'Copy URL'}
-											>
-												<div className='bg-white rounded-full p-2 shadow-lg'>
+											{/* Hover overlay with Copy and Delete buttons */}
+											<div className='absolute inset-0 bg-black/50 backdrop-blur-sm bg-opacity-0 group-hover:bg-opacity-50 flex items-center justify-center gap-2 rounded-lg transition-all duration-200 opacity-0 group-hover:opacity-100'>
+												<button
+													onClick={() => copyFileUrl(asset.url)}
+													className='bg-white rounded-full p-2 shadow-lg hover:bg-indigo-50 cursor-pointer transition-colors'
+													title={t('copyUrl') || 'Copy URL'}
+												>
 													<FiCopy className='h-5 w-5 text-indigo-600' />
-												</div>
-											</button>
+												</button>
+												<button
+													onClick={() => handleDeleteAsset(asset.id)}
+													className='bg-white rounded-full p-2 shadow-lg hover:bg-red-50 cursor-pointer transition-colors'
+													title={t('delete') || 'Delete'}
+												>
+													<FiTrash2 className='h-5 w-5 text-red-600' />
+												</button>
+											</div>
 										</div>
 									) : (
 										<div className='h-[80px] w-full p-2 flex items-center justify-center bg-gray-100 rounded-md relative'>
 											<FiFile className='h-full w-full text-gray-400' />
-											{/* Copy button on hover for non-image files */}
-											<button
-												onClick={() => copyFileUrl(asset.url)}
-												className='absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-50 flex items-center justify-center rounded-lg transition-all duration-200 opacity-0 group-hover:opacity-100 cursor-pointer'
-												title={t('copyUrl') || 'Copy URL'}
-											>
-												<div className='bg-white rounded-full p-2 shadow-lg'>
+											{/* Hover overlay with Copy and Delete buttons for non-image files */}
+											<div className='absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-50 flex items-center justify-center gap-2 rounded-lg transition-all duration-200 opacity-0 group-hover:opacity-100'>
+												<button
+													onClick={() => copyFileUrl(asset.url)}
+													className='bg-white rounded-full p-2 shadow-lg hover:bg-indigo-50 cursor-pointer transition-colors'
+													title={t('copyUrl') || 'Copy URL'}
+												>
 													<FiCopy className='h-5 w-5 text-indigo-600' />
-												</div>
-											</button>
+												</button>
+												<button
+													onClick={() => handleDeleteAsset(asset.id)}
+													className='bg-white rounded-full p-2 shadow-lg hover:bg-red-50 cursor-pointer transition-colors'
+													title={t('delete') || 'Delete'}
+												>
+													<FiTrash2 className='h-5 w-5 text-red-600' />
+												</button>
+											</div>
 										</div>
 									)}
 									<p className='mt-2 text-xs text-gray-600 text-center truncate' title={asset.filename}>
