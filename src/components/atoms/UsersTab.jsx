@@ -9,7 +9,7 @@ import api from '../../utils/api';
 
 const DEBOUNCE_MS = 400;
 
-const UsersTab = ({ handleGeneratePassword, projects, t, setUsers, users = [], isLoading = {}, visiblePasswords = {}, handleShowPassword, setShowNewUserModal, setEditingUser, resetUserForm, setShowEditUserModal, setShowDeleteModal, setShowShareModal, setViewSubmission, currentUserPage = 1, setCurrentUserPage, totalUserPages = 1 }) => {
+const UsersTab = ({ handleGeneratePassword, projects, forms = [], t, setUsers, users = [], isLoading = {}, visiblePasswords = {}, handleShowPassword, setShowNewUserModal, setEditingUser, resetUserForm, setShowEditUserModal, setShowDeleteModal, setShowShareModal, setViewSubmission, currentUserPage = 1, setCurrentUserPage, totalUserPages = 1 }) => {
   const fileInputRef = useRef(null);
   const [isUploading, setIsUploading] = useState(false);
   const [uploadedUsers, setUploadedUsers] = useState([]);
@@ -60,8 +60,8 @@ const UsersTab = ({ handleGeneratePassword, projects, t, setUsers, users = [], i
   const handleDownloadTemplate = async () => {
     try {
       const wsData = [
-        ['National ID', 'Password', 'Role', 'Project Name'],
-        ['1234567890', 'password123', 'user', 'new project2'],
+        ['National ID', 'Password', 'Role', 'Project Name', 'Form ID'],
+        ['1234567890', 'password123', 'user', 'new project2', '1'],
       ];
 
       const projectSheetData = [['ID', 'Project Name']];
@@ -69,9 +69,15 @@ const UsersTab = ({ handleGeneratePassword, projects, t, setUsers, users = [], i
         projectSheetData.push([project.id, project.name]);
       });
 
+      const formSheetData = [['ID', 'Form Title']];
+      forms.forEach(form => {
+        formSheetData.push([form.id, form.title]);
+      });
+
       const wb = XLSX.utils.book_new();
       const userSheet = XLSX.utils.aoa_to_sheet(wsData);
       const projectSheet = XLSX.utils.aoa_to_sheet(projectSheetData);
+      const formSheet = XLSX.utils.aoa_to_sheet(formSheetData);
 
       userSheet['!dataValidation'] = [
         {
@@ -82,10 +88,19 @@ const UsersTab = ({ handleGeneratePassword, projects, t, setUsers, users = [], i
           sqref: 'D2:D100',
           formula1: `'Projects'!$A$2:$A$${projects.length + 1}`,
         },
+        {
+          type: 'list',
+          allowBlank: true,
+          showInputMessage: true,
+          showErrorMessage: true,
+          sqref: 'E2:E100',
+          formula1: `'Forms'!$A$2:$A$${forms.length + 1}`,
+        },
       ];
 
       XLSX.utils.book_append_sheet(wb, userSheet, 'Users');
       XLSX.utils.book_append_sheet(wb, projectSheet, 'Projects');
+      XLSX.utils.book_append_sheet(wb, formSheet, 'Forms');
       XLSX.writeFile(wb, 'users_template.xlsx');
     } catch (error) {
       console.error('Failed to load projects:', error);
@@ -113,6 +128,7 @@ const UsersTab = ({ handleGeneratePassword, projects, t, setUsers, users = [], i
         if (!row['Password']) errors.push(`Missing Password in row ${rowNumber}`);
         if (!row['Role']) errors.push(`Missing Role in row ${rowNumber}`);
         if (!row['Project Name']) errors.push(`Missing Project Name in row ${rowNumber}`);
+        // Form ID is optional, so we don't check for it
       });
 
       if (errors.length > 0) {
@@ -126,6 +142,7 @@ const UsersTab = ({ handleGeneratePassword, projects, t, setUsers, users = [], i
         password: String(row['Password']),
         role: row['Role'],
         projectName: row['Project Name'],
+        formId: row['Form ID'] ? String(row['Form ID']) : undefined,
       }));
 
       setUploadedUsers(usersToUpload);
@@ -311,7 +328,8 @@ const UsersTab = ({ handleGeneratePassword, projects, t, setUsers, users = [], i
                 <div className='overflow-x-auto scrollbar-custom'>
                   <table className='min-w-full divide-y divide-gray-200'>
                     <thead className='bg-gray-50'>
-                      <tr>
+                      <tr> 
+                        <th className='px-6 py-3 rtl:text-right ltr:text-left text-xs font-medium text-gray-500 uppercase tracking-wider'>{ 'ID'}</th>
                         <th className='px-6 py-3 rtl:text-right ltr:text-left text-xs font-medium text-gray-500 uppercase tracking-wider'>{t('national_id')}</th>
                         <th className='px-6 py-3 rtl:text-right ltr:text-left text-xs font-medium text-gray-500 uppercase tracking-wider'>{t('password')}</th>
                         <th className='px-6 py-3 rtl:text-right ltr:text-left text-xs font-medium text-gray-500 uppercase tracking-wider'>{t('role')}</th>
@@ -323,6 +341,9 @@ const UsersTab = ({ handleGeneratePassword, projects, t, setUsers, users = [], i
                     <tbody className='bg-white divide-y divide-gray-200'>
                       {users.map(user => (
                         <tr key={user.id} className='hover:bg-gray-50'>
+                          <td className='px-6 py-4 whitespace-nowrap'>
+                            <div className='text-sm font-medium text-gray-900'>{user.id}</div>
+                          </td>
                           <td className='px-6 py-4 whitespace-nowrap'>
                             <div className='flex items-center gap-2 '>
                               <div className='flex-shrink-0 h-10 w-10 rounded-full bg-indigo-100 flex items-center justify-center text-indigo-600 font-medium uppercase '>

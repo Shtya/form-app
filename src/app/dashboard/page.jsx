@@ -1,9 +1,9 @@
 'use client';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import api, { baseImg } from '../../utils/api';
 import { DragDropContext, Droppable, Draggable } from '@hello-pangea/dnd';
-import { FiTrash2, FiEdit2, FiPlus, FiCheck, FiEye, FiUser, FiFileText, FiList, FiDownload, FiChevronLeft, FiChevronRight, FiEdit3, FiCircle, FiMaximize } from 'react-icons/fi';
+import { FiTrash2, FiEdit2, FiPlus, FiCheck, FiEye, FiUser, FiFileText, FiList, FiDownload, FiChevronLeft, FiChevronRight, FiEdit3, FiCircle, FiMaximize, FiUpload, FiCopy, FiFile } from 'react-icons/fi';
 import { FaAsterisk, FaEye, FaGripVertical, FaUser } from 'react-icons/fa6';
 import * as XLSX from 'xlsx';
 import { useForm } from 'react-hook-form';
@@ -17,10 +17,17 @@ import { DynamicImage } from '../../utils/DynamicImg';
 import { HiEyeOff } from 'react-icons/hi';
 import ProjectsTab from '../../components/atoms/ProjectsTab';
 import UsersTab from '../../components/atoms/UsersTab';
+import TemplatesTab from '../../components/atoms/TemplatesTab';
 
 // Translation objects
 const translations = {
 	en: {
+		"uploadExcel": "Upload Excel",
+		"fileManager": "File Manager",
+		"yourFiles": "Your Files",
+		"fileManagerDescription": "Manage, upload, and organize your files easily",
+		"No file chosen": "No file chosen",
+		"urlCopied": "URL copied to clipboard!",
 		searchUsers: 'Search users...',
 		enterValidLimit: 'Please enter a valid limit',
 		exportStarted: 'Export completed',
@@ -228,6 +235,12 @@ const translations = {
 		no_forms_available: 'No forms available',
 	},
 	ar: {
+		"uploadExcel": "رفع إكسل",
+		"fileManager": "مدير الملفات",
+		"yourFiles": "ملفاتك",
+		"fileManagerDescription": "إدارة ورفع وتنظيم ملفاتك بسهولة",
+		"No file chosen": "لم يتم اختيار ملف",
+		"urlCopied": "تم نسخ الرابط",
 		searchUsers: 'ابحث عن المستخدمين...',
 		enterValidLimit: 'من فضلك أدخل حدًا صالحًا',
 		exportStarted: 'تم إكمال التصدير',
@@ -688,6 +701,13 @@ export default function DashboardPage() {
 	const [selectedProjectId, setSelectedProjectId] = useState('all');
 	const [selectedFormId, setSelectedFormId] = useState('all');
 	const [selectedLimit, setSelectedLimit] = useState(10);
+	const [uploadingFormId, setUploadingFormId] = useState(null);
+	const templateFileInputRef = useRef(null);
+	const [currentUploadFormId, setCurrentUploadFormId] = useState(null);
+	const [showFileManagerModal, setShowFileManagerModal] = useState(false);
+	const [userAssets, setUserAssets] = useState([]);
+	const [uploadingFile, setUploadingFile] = useState(false);
+	const fileUploadInputRef = useRef(null);
 
 	const t = key => translations[language][key] || key;
 
@@ -1083,6 +1103,305 @@ export default function DashboardPage() {
 		setShowNewFieldModal(true);
 	};
 
+	const fetchUserAssets = async () => {
+		try {
+			const response = await api.get('/assets');
+			setUserAssets(response.data?.data || []);
+		} catch (error) {
+			console.error('Failed to fetch assets:', error);
+		}
+	};
+
+	const handleFileUpload = async (e) => {
+		const file = e.target.files[0];
+		if (!file) return;
+
+		// Validate file size (5MB max)
+		if (file.size > 5 * 1024 * 1024) {
+			toast.error(t('fileSizeError') || 'File size must be less than 5MB');
+			return;
+		}
+
+		try {
+			setUploadingFile(true);
+			const formData = new FormData();
+			formData.append('file', file);
+
+			const response = await api.post('/assets', formData, {
+				headers: {
+					'Content-Type': 'multipart/form-data',
+				},
+			});
+
+			setUserAssets(prev => [...prev, response.data]);
+			toast.success(t('fileUploaded') || 'File uploaded successfully');
+		} catch (error) {
+			toast.error(t('fileUploadError') || 'Failed to upload file');
+			console.error('Upload failed:', error);
+		} finally {
+			setUploadingFile(false);
+			if (fileUploadInputRef.current) {
+				fileUploadInputRef.current.value = '';
+			}
+		}
+	};
+
+	const extractUploadsPath = (url) => {
+		const normalized = url.replace(/\\/g, '/');
+		const index = normalized.indexOf('uploads');
+		if (index === -1) return normalized;
+		return normalized.slice(index);
+	};
+	const copyFileUrl = async (url) => {
+		try {
+			const uploadsPath = extractUploadsPath(url);
+
+			await navigator.clipboard.writeText(uploadsPath);
+			toast.success(t('urlCopied') || 'URL copied to clipboard!');
+		} catch (error) {
+			const uploadsPath = extractUploadsPath(url);
+
+			const textArea = document.createElement('textarea');
+			textArea.value = uploadsPath;
+			document.body.appendChild(textArea);
+			textArea.select();
+			document.execCommand('copy');
+			document.body.removeChild(textArea);
+
+			toast.success(t('urlCopied') || 'URL copied to clipboard!');
+		}
+	};
+
+
+
+	useEffect(() => {
+		if (showFileManagerModal) {
+			fetchUserAssets();
+		}
+	}, [showFileManagerModal]);
+
+	const handleDownloadFormTemplate = async (form) => {
+		try {
+			if (!form || !form.fields || form.fields.length === 0) {
+				toast.error(t('formHasNoFields') || 'This form has no fields');
+				return;
+			}
+
+			// Create headers: User ID + all form field keys
+			const headers = ['User ID'];
+			form.fields?.forEach(field => {
+				headers.push(field.label || field.key);
+			});
+
+			// Create example row
+			const exampleRow = ['1'];
+			form.fields?.forEach(field => {
+				if (field.type === 'select' || field.type === 'radio') {
+					exampleRow.push(field.options?.[0] || '');
+				} else if (field.type === 'checkbox') {
+					exampleRow.push('true');
+				} else if (field.type === 'date') {
+					exampleRow.push('2024-01-01');
+				} else {
+					exampleRow.push('example value');
+				}
+			});
+
+			const wsData = [headers, exampleRow];
+
+			// Create forms reference sheet
+			const formSheetData = [['ID', 'Form Title']];
+			forms.forEach(f => {
+				formSheetData.push([f.id, f.title]);
+			});
+
+			const wb = XLSX.utils.book_new();
+			const templateSheet = XLSX.utils.aoa_to_sheet(wsData);
+			const formSheet = XLSX.utils.aoa_to_sheet(formSheetData);
+
+			// Set column widths
+			const colWidths = [{ wch: 25 }]; // Email column
+			form.fields?.forEach(() => {
+				colWidths.push({ wch: 20 });
+			});
+			templateSheet['!cols'] = colWidths;
+
+			XLSX.utils.book_append_sheet(wb, templateSheet, 'Template');
+			XLSX.utils.book_append_sheet(wb, formSheet, 'Forms');
+			XLSX.writeFile(wb, `${form.title || 'form'}_template.xlsx`);
+			toast.success(t('templateDownloaded') || 'Template downloaded successfully');
+		} catch (error) {
+			console.error('Failed to download template:', error);
+			toast.error(t('downloadTemplateError') || 'Failed to download template');
+		}
+	};
+
+	const handleUploadFormTemplate = async (event, formId) => {
+		const file = event.target.files[0];
+		if (!file) return;
+
+		setUploadingFormId(formId);
+		setCurrentUploadFormId(formId);
+
+		try {
+			const data = await file.arrayBuffer();
+			const workbook = XLSX.read(data, { type: 'array' });
+			const sheet = workbook.Sheets['Template'] || workbook.Sheets[workbook.SheetNames[0]];
+			const jsonData = XLSX.utils.sheet_to_json(sheet, { defval: '' });
+
+			if (jsonData.length === 0) {
+				toast.error(t('emptyFile') || 'The Excel file is empty');
+				setUploadingFormId(null);
+				event.target.value = '';
+				return;
+			}
+
+			const form = forms.find(f => f.id === formId);
+			if (!form) {
+				toast.error(t('formNotFound') || 'Form not found');
+				setUploadingFormId(null);
+				event.target.value = '';
+				return;
+			}
+
+			// Get field keys from form
+			const fieldKeys = form.fields?.map(f => f.key) || [];
+			const userIdKey = Object.keys(jsonData[0]).find(key =>
+				key.toLowerCase().includes('user') && key.toLowerCase().includes('id')
+			);
+
+			if (!userIdKey) {
+				toast.error(t('userIdColumnNotFound') || 'User ID column not found in the file');
+				setUploadingFormId(null);
+				event.target.value = '';
+				return;
+			}
+
+			const submissions = [];
+			const errors = [];
+
+			jsonData.forEach((row, index) => {
+				const rowNumber = index + 2;
+				const userId = row[userIdKey];
+
+				// Validate User ID (always required)
+				if (!userId || String(userId).trim() === '') {
+					errors.push(`Row ${rowNumber}: Missing User ID (required)`);
+					return;
+				}
+
+
+				// Build answers object from form fields
+				const answers = {};
+				fieldKeys.forEach(key => {
+					// Find the column that matches this field's label or key
+					const field = form.fields?.find(f => f.key === key);
+					const columnKey = Object.keys(row).find(colKey => {
+						const normalizedCol = colKey.toLowerCase().trim();
+						const normalizedLabel = (field?.label || '').toLowerCase().trim();
+						const normalizedKey = key.toLowerCase().trim();
+						return normalizedCol === normalizedLabel || normalizedCol === normalizedKey;
+					});
+
+					// Only validate required fields
+					if (field?.required) {
+						if (!columnKey || row[columnKey] === undefined || row[columnKey] === '') {
+							errors.push(`Row ${rowNumber}: Missing required field "${field.label || key}"`);
+							return;
+						}
+					}
+
+					// Add value if it exists (for both required and optional fields)s
+
+					if (columnKey && row[columnKey] !== undefined && row[columnKey] !== '') {
+						let value = row[columnKey];
+
+						// Handle different field types
+						if (field?.type === 'checkbox') {
+							value = value === true || value === 'true' || value === 'TRUE' || value === 1 || value === '1';
+						} else if (field?.type === 'number') {
+							value = parseFloat(value);
+							if (isNaN(value)) {
+								errors.push(`Row ${rowNumber}: Invalid number for field "${field.label || key}"`);
+								return;
+							}
+						} else if (field?.type === 'date') {
+							// Keep date as string, backend will handle it
+							value = String(value);
+						} else {
+							value = String(value);
+						}
+
+						answers[key] = value;
+					}
+				});
+
+				const userIdNum = parseInt(String(userId));
+				if (isNaN(userIdNum)) {
+					errors.push(`Row ${rowNumber}: User ID must be a number`);
+					return;
+				}
+
+				submissions.push({
+					userId: userIdNum,
+					answers,
+					form_id: String(formId),
+				});
+			});
+
+			if (errors.length > 0) {
+				errors.forEach(err => toast.error(err));
+				setUploadingFormId(null);
+				event.target.value = '';
+				return;
+			}
+
+			if (submissions.length === 0) {
+				toast.error(t('noValidSubmissions') || 'No valid submissions found in the file');
+				setUploadingFormId(null);
+				event.target.value = '';
+				return;
+			}
+
+			// Upload to backend
+			const response = await api.post('/form-submissions/bulk-upload', { submissions });
+			const { results } = response.data;
+
+			let successCount = 0;
+			let failCount = 0;
+
+			results.forEach(result => {
+				if (result.status === 'failed') {
+					failCount++;
+					toast.error(`${result.email}: ${result.reason}`);
+				} else {
+					successCount++;
+				}
+			});
+
+			if (successCount > 0) {
+				toast.success(`${successCount} submission(s) ${results[0]?.status === 'updated' ? 'updated' : 'created'} successfully`);
+			}
+
+			if (failCount > 0) {
+				toast.error(`${failCount} submission(s) failed`);
+			}
+
+			// Refresh submissions if on submissions tab
+			if (activeTab === 'submissions') {
+				fetchData();
+			}
+
+		} catch (err) {
+			console.error('Upload error:', err);
+			toast.error(err.response?.data?.message || t('uploadError') || 'Failed to upload submissions');
+		} finally {
+			setUploadingFormId(null);
+			setCurrentUploadFormId(null);
+			event.target.value = '';
+		}
+	};
+
 	const exportToExcel = async () => {
 		try {
 			setIsExporting(true);
@@ -1352,6 +1671,22 @@ export default function DashboardPage() {
 							className={`block px-3 py-2 rounded-md text-base font-medium w-full text-left ${activeTab === 'users' ? 'bg-indigo-50 text-indigo-700' : 'text-gray-700 hover:text-indigo-600 hover:bg-gray-50'}`}>
 							{t('users')}
 						</button>
+						<button
+							onClick={() => {
+								setActiveTab('projects');
+								setIsMobileMenuOpen(false);
+							}}
+							className={`block px-3 py-2 rounded-md text-base font-medium w-full text-left ${activeTab === 'projects' ? 'bg-indigo-50 text-indigo-700' : 'text-gray-700 hover:text-indigo-600 hover:bg-gray-50'}`}>
+							{t('projects')}
+						</button>
+						<button
+							onClick={() => {
+								setActiveTab('templates');
+								setIsMobileMenuOpen(false);
+							}}
+							className={`block px-3 py-2 rounded-md text-base font-medium w-full text-left ${activeTab === 'templates' ? 'bg-indigo-50 text-indigo-700' : 'text-gray-700 hover:text-indigo-600 hover:bg-gray-50'}`}>
+							{t('templates') || 'Templates'}
+						</button>
 					</div>
 				</div>
 			)}
@@ -1376,6 +1711,10 @@ export default function DashboardPage() {
 							<FiUser className='h-4 w-4' />
 							<span>{t('projects')}</span>
 						</button>
+						{/* <button onClick={() => setActiveTab('templates')} className={`whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm flex items-center space-x-2 ${activeTab === 'templates' ? 'border-indigo-500 text-indigo-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'} cursor-pointer`}>
+							<FiDownload className='h-4 w-4' />
+							<span>{t('templates') || 'Templates'}</span>
+						</button> */}
 					</nav>
 				</div>
 
@@ -1432,7 +1771,7 @@ export default function DashboardPage() {
 												</div>
 
 												<div className='flex items-center gap-2'>
-													<button
+													{/* <button
 														onClick={e => {
 															e.stopPropagation();
 															toggleFormActive(form.id, form.isActive);
@@ -1440,9 +1779,45 @@ export default function DashboardPage() {
 														title={form.isActive ? t('deactivateForm') : t('activateForm')}
 														className={`relative cursor-pointer inline-flex h-6 w-11 items-center rounded-full transition-colors  ${form.isActive ? 'bg-green-500' : 'bg-gray-300'}`}>
 														<span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform  ${form.isActive ? ' rtl:-translate-x-6 ltr:translate-x-6' : ' rtl:-translate-x-1 ltr:translate-x-1'}`} />
-													</button>
+													</button> */}
 
 													<div className='flex items-center gap-1'>
+														<button
+															onClick={e => {
+																e.stopPropagation();
+																setShowFileManagerModal(true);
+															}}
+															className='p-1.5 cursor-pointer text-gray-500 hover:text-blue-600 hover:bg-blue-50 rounded-full transition-colors'
+															title={t('fileManager') || 'File Manager'}>
+															<FiFile className='w-4 h-4' />
+														</button>
+														<button
+															onClick={e => {
+																e.stopPropagation();
+																handleDownloadFormTemplate(form);
+															}}
+															className='p-1.5 cursor-pointer text-gray-500 hover:text-indigo-600 hover:bg-indigo-50 rounded-full transition-colors'
+															title={t('downloadTemplate') || 'Download Template'}>
+															<FiDownload className='w-4 h-4' />
+														</button>
+														<button
+															onClick={e => {
+																e.stopPropagation();
+																setCurrentUploadFormId(form.id);
+																templateFileInputRef.current?.click();
+															}}
+															disabled={uploadingFormId === form.id}
+															className={`p-1.5 cursor-pointer text-gray-500 hover:text-green-600 hover:bg-green-50 rounded-full transition-colors ${uploadingFormId === form.id ? 'opacity-50 cursor-not-allowed' : ''}`}
+															title={t('uploadExcel') || 'Upload Excel'}>
+															{uploadingFormId === form.id ? (
+																<svg className='animate-spin h-4 w-4' xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24'>
+																	<circle className='opacity-25' cx='12' cy='12' r='10' stroke='currentColor' strokeWidth='4'></circle>
+																	<path className='opacity-75' fill='currentColor' d='M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z'></path>
+																</svg>
+															) : (
+																<FiUpload className='w-4 h-4' />
+															)}
+														</button>
 														<button
 															onClick={e => {
 																e.stopPropagation();
@@ -1457,9 +1832,13 @@ export default function DashboardPage() {
 											</div>
 
 											<div className='flex justify-between items-center mt-3 pt-3 border-t border-gray-100'>
+												<div className='flex items-center justify-center gap-2' >
 												<span className={`text-xs px-2 py-1 rounded-full ${form.isActive ? 'bg-green-100 text-green-800' : 'bg-indigo-100 text-indigo-800'}`}>
 													{form.fields?.length || 0} {form.fields?.length === 1 ? t('field') : t('fields')}
 												</span>
+												<span className='inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-gray-100 text-gray-700 text-nowrap'>ID: {form.id}</span>
+
+												</div>
 												<span className='text-xs text-gray-500'>
 													{t('created')} {new Date(form.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
 												</span>
@@ -1610,6 +1989,20 @@ export default function DashboardPage() {
 					</div>
 				)}
 
+				{/* Hidden file input for template upload */}
+				<input
+					type='file'
+					ref={templateFileInputRef}
+					accept='.xlsx,.xls'
+					className='hidden'
+					onChange={(e) => {
+						if (currentUploadFormId) {
+							handleUploadFormTemplate(e, currentUploadFormId);
+						}
+					}}
+					disabled={!!uploadingFormId}
+				/>
+
 				{activeTab === 'submissions' && (
 					<div className='bg-white rounded-xl shadow-md overflow-hidden'>
 						<div className='p-5 border-b border-gray-100 flex items-center justify-between flex-wrap gap-4'>
@@ -1662,9 +2055,11 @@ export default function DashboardPage() {
 					</div>
 				)}
 
-				{activeTab === 'users' && <UsersTab handleGeneratePassword={handleGeneratePassword} setUsers={setUsers} projects={projects} t={t} users={users} isLoading={isLoading} visiblePasswords={visiblePasswords} handleShowPassword={handleShowPassword} setShowNewUserModal={setShowNewUserModal} setEditingUser={setEditingUser} resetUserForm={resetUserForm} setShowEditUserModal={setShowEditUserModal} setShowShareModal={setShowShareModal} setShowDeleteModal={setShowDeleteModal} setViewSubmission={setViewSubmission} currentUserPage={currentUserPage} setCurrentUserPage={setCurrentUserPage} totalUserPages={totalUserPages} />}
+				{activeTab === 'users' && <UsersTab handleGeneratePassword={handleGeneratePassword} setUsers={setUsers} projects={projects} forms={forms} t={t} users={users} isLoading={isLoading} visiblePasswords={visiblePasswords} handleShowPassword={handleShowPassword} setShowNewUserModal={setShowNewUserModal} setEditingUser={setEditingUser} resetUserForm={resetUserForm} setShowEditUserModal={setShowEditUserModal} setShowShareModal={setShowShareModal} setShowDeleteModal={setShowDeleteModal} setViewSubmission={setViewSubmission} currentUserPage={currentUserPage} setCurrentUserPage={setCurrentUserPage} totalUserPages={totalUserPages} />}
 
 				{activeTab === 'projects' && <ProjectsTab user={user} t={t} />}
+
+				{/* {activeTab === 'templates' && <TemplatesTab forms={forms} t={t} />} */}
 			</main>
 
 			{/* Modals */}
@@ -2057,6 +2452,89 @@ export default function DashboardPage() {
 			</Modal>
 
 			{showShareModal && <ShareCredentialsModal user={showShareModal} onClose={() => setShowShareModal(null)} t={t} />}
+
+			{/* File Manager Modal for uploading and copying file URLs */}
+			<Modal
+				title={t('fileManager') || 'File Manager'}
+				show={showFileManagerModal}
+				onClose={() => setShowFileManagerModal(false)}
+			>
+				<div className='space-y-6'>
+					<div>
+						<h3 className='text-sm font-semibold text-gray-700 mb-3'>{t('yourFiles') || 'Your Files'}</h3>
+						<p className='text-xs text-gray-500 mb-4'>{t('fileManagerDescription') || 'Upload files and copy their URLs to use in Excel templates. Hover over an image to see the copy button.'}</p>
+
+						<div className='grid grid-cols-2 sm:grid-cols-3 gap-4 max-h-[500px] min-h-[300px] overflow-y-auto rounded-lg p-2 bg-gray-50 border border-gray-200'>
+							{/* Upload Button as First Item */}
+							<label className='hover:scale-[.98] flex flex-col items-center justify-center text-center p-2 h-[130px] w-full border-2 border-dashed border-indigo-300 rounded-lg bg-indigo-50 hover:bg-indigo-100 cursor-pointer transition duration-300 relative'>
+								<input
+									type='file'
+									ref={fileUploadInputRef}
+									className='sr-only'
+									onChange={handleFileUpload}
+									disabled={uploadingFile}
+								/>
+								<FiUpload className='h-6 w-6 text-indigo-400' />
+								<span className='mt-1 text-xs text-indigo-600'>{t('upload') || 'Upload'}</span>
+
+								{uploadingFile && (
+									<div className='absolute inset-0 bg-white bg-opacity-70 flex items-center justify-center rounded-lg'>
+										<svg className='animate-spin h-5 w-5 text-indigo-500' xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24'>
+											<circle className='opacity-25' cx='12' cy='12' r='10' stroke='currentColor' strokeWidth='4'></circle>
+											<path className='opacity-75' fill='currentColor' d='M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z'></path>
+										</svg>
+									</div>
+								)}
+							</label>
+
+							{/* User Uploaded Files */}
+							{userAssets.map(asset => (
+								<div
+									key={asset.id}
+									className='h-[130px] group relative shadow-inner rounded-lg border border-gray-200 hover:border-indigo-400 transition p-2 bg-white'
+								>
+									{asset.mimeType?.startsWith('image/') ? (
+										<div className='relative h-full'>
+											<img
+												src={baseImg + asset.url}
+												alt={asset.filename}
+												className='h-[80px] mx-auto w-full object-contain rounded'
+											/>
+											{/* Copy button on hover */}
+											<button
+												onClick={() => copyFileUrl(asset.url)}
+												className='absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-50 flex items-center justify-center rounded-lg transition-all duration-200 opacity-0 group-hover:opacity-100 cursor-pointer'
+												title={t('copyUrl') || 'Copy URL'}
+											>
+												<div className='bg-white rounded-full p-2 shadow-lg'>
+													<FiCopy className='h-5 w-5 text-indigo-600' />
+												</div>
+											</button>
+										</div>
+									) : (
+										<div className='h-[80px] w-full p-2 flex items-center justify-center bg-gray-100 rounded-md relative'>
+											<FiFile className='h-full w-full text-gray-400' />
+											{/* Copy button on hover for non-image files */}
+											<button
+												onClick={() => copyFileUrl(asset.url)}
+												className='absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-50 flex items-center justify-center rounded-lg transition-all duration-200 opacity-0 group-hover:opacity-100 cursor-pointer'
+												title={t('copyUrl') || 'Copy URL'}
+											>
+												<div className='bg-white rounded-full p-2 shadow-lg'>
+													<FiCopy className='h-5 w-5 text-indigo-600' />
+												</div>
+											</button>
+										</div>
+									)}
+									<p className='mt-2 text-xs text-gray-600 text-center truncate' title={asset.filename}>
+										{asset.filename}
+									</p>
+								</div>
+							))}
+						</div>
+					</div>
+				</div>
+			</Modal>
 		</div>
 	);
 }
