@@ -136,14 +136,14 @@ export default function ProjectsTab({ user , t }) {
   useEffect(() => {
     fetchProjects();
   }, []);
-
+ 
   return (
     <div className='flex gap-6 min-h-screen p-6 bg-gray-50'>
       {/* Sidebar Projects */}
       <aside className='w-64 !h-full bg-white border border-gray-200 rounded-xl shadow-sm p-4 space-y-4'>
         <div className='flex justify-between items-center pb-2 border-b border-gray-100'>
           <h2 className='font-semibold text-lg text-gray-800 capitalize '>{t('projects')}</h2>
-          {user?.admin && <button onClick={() => setShowNewProjectModal(true)} title={t('createNewForm')} className=' cursor-pointer hover:scale-[1.03] flex items-center gap-1 bg-indigo-600 text-white px-3 py-1.5 rounded-md hover:bg-indigo-700 transition text-sm font-medium'>
+          {user?.role == 'admin' && <button onClick={() => setShowNewProjectModal(true)} title={t('createNewForm')} className=' cursor-pointer hover:scale-[1.03] flex items-center gap-1 bg-indigo-600 text-white px-3 py-1.5 rounded-md hover:bg-indigo-700 transition text-sm font-medium'>
             <Plus size={16} className='' />
             {t('create')}
           </button>}
@@ -239,9 +239,9 @@ export default function ProjectsTab({ user , t }) {
                           <table className='min-w-full divide-y divide-gray-200'>
                             <thead className='bg-gray-50'>
                               <tr>
-                                <th className='px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider'>{t('status')}</th>
-                                <th className='px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider'>{t('submissionDate')}</th>
-                                <th className='px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider'>{t('actions')}</th>
+                                <th className='rtl:text-right px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider'>{t('status')}</th>
+                                <th className='rtl:text-right px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider'>{t('submissionDate')}</th>
+                                <th className='rtl:text-right px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider'>{t('actions')}</th>
                               </tr>
                             </thead>
                             <tbody className='bg-white divide-y divide-gray-200'>

@@ -42,7 +42,7 @@ export function CustomCheckbox({ submission, t, setUsers }) {
     }
   };
   return (
-    <label className='relative inline-flex items-center cursor-pointer group'>
+    <label className='relative inline-flex items-center gap-1 cursor-pointer group'>
       <input type='checkbox' checked={isChecked} onChange={handleToggle} disabled={loading} className='sr-only peer' />
       <div
         className={`w-5 h-5 rounded border-2 flex items-center justify-center transition-all duration-200
