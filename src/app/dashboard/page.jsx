@@ -17,7 +17,6 @@ import { DynamicImage } from '../../utils/DynamicImg';
 import { HiEyeOff } from 'react-icons/hi';
 import ProjectsTab from '../../components/atoms/ProjectsTab';
 import UsersTab from '../../components/atoms/UsersTab';
-import TemplatesTab from '../../components/atoms/TemplatesTab';
 
 // Translation objects
 const translations = {
@@ -1557,6 +1556,26 @@ export default function DashboardPage() {
 		return colors[type] || colors.default;
 	};
 
+
+	const IMG_EXTS = ['png', 'jpg', 'jpeg', 'webp', 'gif', 'bmp', 'svg'];
+
+	const getUrlExt = (url = '') => {
+		try {
+			const clean = String(url).split('?')[0].split('#')[0];
+			const last = clean.split('/').pop() || '';
+			const dot = last.lastIndexOf('.');
+			return dot >= 0 ? last.slice(dot + 1).toLowerCase() : '';
+		} catch {
+			return '';
+		}
+	};
+
+	const isImageUrlByExt = (url = '') => IMG_EXTS.includes(getUrlExt(url));
+
+	// لو ما فيش امتداد خالص
+	const hasNoExt = (url = '') => getUrlExt(url) === '';
+
+
 	const renderSubmissionTable = () => {
 		// Add a state for tracking which submissions are being deleted
 
@@ -1649,41 +1668,76 @@ export default function DashboardPage() {
 										if (key.endsWith('_asset')) return null;
 										if (value) {
 											if (typeof value === 'string' && value.startsWith('upload')) {
-												content = (
+												const fileUrl = baseImg + value; // ده الرابط النهائي
+
+												const showImg = isImageUrlByExt(fileUrl); // ✅ صورة لو ext معروف
+												// لو عايز الشرط يبقى "لو مفيش ext اعرض ايقونة" فقط:
+												// const showImg = !hasNoExt(fileUrl);  ❌ (ده يعرض صور حتى لو pdf)
+												// الأفضل: showImg حسب ext
+
+												content = showImg ? (
 													<div className={`relative group w-10 h-10 ${deletingSubmissions[submission.id] ? 'opacity-50' : ''}`}>
 														<img
-															src={baseImg + value}
-															alt='Uploaded'
-															className='h-full w-full rounded object-cover border border-gray-300 cursor-pointer'
-															onClick={() => !deletingSubmissions[submission.id] && setPreviewImg(baseImg + value)}
+															src={fileUrl}
+															alt="Uploaded"
+															className="h-full w-full rounded object-cover border border-gray-300 cursor-pointer"
+															onClick={() => !deletingSubmissions[submission.id] && setPreviewImg(fileUrl)}
 														/>
 														<div
-															onClick={() => !deletingSubmissions[submission.id] && setPreviewImg(baseImg + value)}
-															className='absolute inset-0 bg-black/50 text-white flex items-center justify-center rounded opacity-0 group-hover:opacity-100 transition-opacity duration-200 cursor-pointer'
+															onClick={() => !deletingSubmissions[submission.id] && setPreviewImg(fileUrl)}
+															className="absolute inset-0 bg-black/50 text-white flex items-center justify-center rounded opacity-0 group-hover:opacity-100 transition-opacity duration-200 cursor-pointer"
 														>
-															<FiMaximize className='w-5 h-5' />
+															<FiMaximize className="w-5 h-5" />
 														</div>
 													</div>
+												) : (
+													<div className="flex items-center gap-2">
+														 
+														<a
+															href={fileUrl}
+															download
+															className="inline-flex items-center justify-center w-10 h-10 rounded bg-indigo-600 text-white hover:bg-indigo-700"
+															title="Download"
+														>
+															<FiDownload className="w-4 h-4" />
+														</a>
+													</div>
 												);
-											} else if (typeof value === 'object' && value !== null) {
+											}
+											else if (typeof value === 'object' && value !== null) {
 												if (value.url) {
-													content = (
+													const fileUrl = value.url.startsWith('http') ? value.url : (baseImg + value.url);
+													const showImg = isImageUrlByExt(fileUrl);
+
+													content = showImg ? (
 														<div className={`relative group w-10 h-10 ${deletingSubmissions[submission.id] ? 'opacity-50' : ''}`}>
 															<img
-																src={baseImg + value.url}
-																alt='Uploaded'
-																className='h-full w-full rounded object-cover border border-gray-300 cursor-pointer'
-																onClick={() => !deletingSubmissions[submission.id] && setPreviewImg(value.url)}
+																src={fileUrl}
+																alt="Uploaded"
+																className="h-full w-full rounded object-cover border border-gray-300 cursor-pointer"
+																onClick={() => !deletingSubmissions[submission.id] && setPreviewImg(fileUrl)}
 															/>
 															<div
-																onClick={() => !deletingSubmissions[submission.id] && setPreviewImg(value.url)}
-																className='absolute inset-0 bg-black/50 text-white flex items-center justify-center rounded opacity-0 group-hover:opacity-100 transition-opacity duration-200 cursor-pointer'
+																onClick={() => !deletingSubmissions[submission.id] && setPreviewImg(fileUrl)}
+																className="absolute inset-0 bg-black/50 text-white flex items-center justify-center rounded opacity-0 group-hover:opacity-100 transition-opacity duration-200 cursor-pointer"
 															>
-																<FiMaximize className='w-5 h-5' />
+																<FiMaximize className="w-5 h-5" />
 															</div>
 														</div>
+													) : (
+														<div className="flex items-center gap-2"> 
+															<a
+																href={fileUrl}
+																download
+																className="inline-flex items-center justify-center w-9 h-9 rounded bg-indigo-600 text-white hover:bg-indigo-700"
+																title="Download"
+															>
+																<FiDownload className="w-4 h-4" />
+															</a>
+														</div>
 													);
-												} else {
+												}
+												else {
 													content = (
 														<ul className={`list-disc list-inside space-y-1 text-xs text-gray-700 ${deletingSubmissions[submission.id] ? 'opacity-50' : ''}`}>
 															{Object.entries(value).map(([k, v]) => (
@@ -2240,7 +2294,6 @@ export default function DashboardPage() {
 
 				{activeTab === 'projects' && <ProjectsTab user={user} t={t} />}
 
-				{/* {activeTab === 'templates' && <TemplatesTab forms={forms} t={t} />} */}
 			</main>
 
 			{/* Modals */}
