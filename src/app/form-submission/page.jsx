@@ -393,23 +393,46 @@ export default function FormSubmissionPage() {
 	};
 
 	useEffect(() => {
-  // wait for everything needed to apply values
-  if (!activeForm?.fields?.length) return;
-  if (!userAssets) return;
-  if (!submissions?.length) return;
+		// wait for everything needed to apply values
+		if (!activeForm?.fields?.length) return;
+		if (!userAssets) return;
+		if (!submissions?.length) return;
 
-  // if user already has saved selection, don't override it
-  const saved = localStorage.getItem(SELECTED_SUB_KEY);
-  if (saved) return;
+		// if user already has saved selection, don't override it
+		const saved = localStorage.getItem(SELECTED_SUB_KEY);
+		if (saved) return;
 
-  handleChooseSubmission(submissions[0].id);
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-}, [submissions, activeForm, userAssets]);
+		handleChooseSubmission(submissions[0].id);
+		// eslint-disable-next-line react-hooks/exhaustive-deps
+	}, [submissions, activeForm, userAssets]);
 
 
 	// -----------------------
 	// render inputs
-	// -----------------------
+	// ----------------------- 
+	const IMG_EXTS = ['png', 'jpg', 'jpeg', 'webp', 'gif', 'bmp', 'svg'];
+
+	const getUrlExt = (url = '') => {
+		try {
+			const clean = String(url).split('?')[0].split('#')[0];
+			const last = clean.split('/').pop() || '';
+			const dot = last.lastIndexOf('.');
+			return dot >= 0 ? last.slice(dot + 1).toLowerCase() : '';
+		} catch {
+			return '';
+		}
+	};
+
+	const isImageUrlByExt = (url = '') => IMG_EXTS.includes(getUrlExt(url));
+
+	const toFileUrl = (value) => {
+		if (!value) return '';
+		// لو already full url
+		if (String(value).startsWith('http')) return String(value);
+		// لو uploads/.. أو أي path راجع من backend
+		return baseImg + String(value);
+	};
+
 	const renderFieldInput = field => {
 		const fieldValue = watch(field.key);
 		const error = errors[field.key];
@@ -427,8 +450,8 @@ export default function FormSubmissionPage() {
 						{...register(field.key)}
 						type={field.type}
 						className={`w-full px-4 py-3 border rounded-lg shadow-sm focus:outline-none focus:ring-2 ${error
-								? 'border-red-500 focus:ring-red-500'
-								: 'border-gray-300 focus:border-indigo-500 focus:ring-indigo-500'
+							? 'border-red-500 focus:ring-red-500'
+							: 'border-gray-300 focus:border-indigo-500 focus:ring-indigo-500'
 							}`}
 						placeholder={placeholder || ''}
 						disabled={isSubmitting}
@@ -462,8 +485,8 @@ export default function FormSubmissionPage() {
 									: undefined,
 						}}
 						className={`w-full px-4 py-3 border rounded-lg shadow-sm focus:outline-none focus:ring-2 ${error
-								? 'border-red-500 focus:ring-red-500'
-								: 'border-gray-300 focus:border-indigo-500 focus:ring-indigo-500'
+							? 'border-red-500 focus:ring-red-500'
+							: 'border-gray-300 focus:border-indigo-500 focus:ring-indigo-500'
 							}`}
 						placeholder={placeholder || 'Select date'}
 						disabled={isSubmitting}
@@ -477,8 +500,8 @@ export default function FormSubmissionPage() {
 						{...register(field.key)}
 						rows={4}
 						className={`w-full px-4 py-3 border rounded-lg shadow-sm focus:outline-none focus:ring-2 ${error
-								? 'border-red-500 focus:ring-red-500'
-								: 'border-gray-300 focus:border-indigo-500 focus:ring-indigo-500'
+							? 'border-red-500 focus:ring-red-500'
+							: 'border-gray-300 focus:border-indigo-500 focus:ring-indigo-500'
 							}`}
 						placeholder={placeholder || ''}
 						disabled={isSubmitting}
@@ -491,8 +514,8 @@ export default function FormSubmissionPage() {
 					<select
 						{...register(field.key)}
 						className={`w-full px-4 py-3 border rounded-lg shadow-sm focus:outline-none focus:ring-2 ${error
-								? 'border-red-500 focus:ring-red-500'
-								: 'border-gray-300 focus:border-indigo-500 focus:ring-indigo-500'
+							? 'border-red-500 focus:ring-red-500'
+							: 'border-gray-300 focus:border-indigo-500 focus:ring-indigo-500'
 							}`}
 						disabled={isSubmitting}
 						dir={language === 'ar' ? 'rtl' : 'ltr'}
@@ -573,25 +596,30 @@ export default function FormSubmissionPage() {
 				);
 
 			case 'file':
+
+				const fileUrl = toFileUrl(fieldValue);
+				const showImg = isImageUrlByExt(fileUrl);
+
 				return (
 					<div className='space-y-3'>
 						{fieldValue ? (
 							<div className='flex items-center gap-4 p-4 bg-gray-50 rounded-lg border border-gray-200 shadow-sm'>
 								<div className='flex-shrink-0'>
-									{String(fieldValue).match(/\.(jpeg|jpg|gif|png|webp|svg)$/i) ? (
+									{showImg ? (
 										<img
-											src={baseImg + fieldValue}
+											src={fileUrl}
 											alt='Uploaded preview'
 											className='h-24 w-24 object-contain border-gray-200 p-1 bg-white shadow-inner rounded-md border'
 										/>
 									) : (
-										<div className='h-24 w-24 flex items-center justify-center bg-gray-100 rounded-md border'>
-											<FiFile className='h-8 w-8 text-gray-400' />
+										<div className='h-24 w-24 flex items-center justify-center bg-gray-100 rounded-md border border-gray-200'>
+											<FiFile className='h-12 w-12 text-gray-400' />
 										</div>
 									)}
 								</div>
 
-								<div>
+								<div className='flex flex-col gap-2'>
+									{/* زر تغيير الملف */}
 									<button
 										type='button'
 										onClick={() => openAssetModal(field.key)}
@@ -600,6 +628,19 @@ export default function FormSubmissionPage() {
 										<FiEdit2 className='h-5 w-5' />
 										{t.form.changeFile}
 									</button>
+
+									{/* لو مش صورة: زر تحميل/فتح */}
+									{!showImg && (
+										<a
+											href={fileUrl}
+											target='_blank'
+											rel='noopener noreferrer'
+											className='inline-flex items-center gap-2 px-4 py-2 rounded-md bg-indigo-600 text-white hover:bg-indigo-700 text-sm font-medium w-fit'
+										>
+											<FiUpload className='h-4 w-4' />
+											Download / Open
+										</a>
+									)}
 								</div>
 							</div>
 						) : (
@@ -627,8 +668,8 @@ export default function FormSubmissionPage() {
 						type='tel'
 						defaultValue='966'
 						className={`w-full px-4 py-3 border rounded-lg shadow-sm focus:outline-none focus:ring-2 ${error
-								? 'border-red-500 focus:ring-red-500'
-								: 'border-gray-300 focus:border-indigo-500 focus:ring-indigo-500'
+							? 'border-red-500 focus:ring-red-500'
+							: 'border-gray-300 focus:border-indigo-500 focus:ring-indigo-500'
 							}`}
 						placeholder={placeholder || 'مثال: 966512345678'}
 						disabled={isSubmitting}
@@ -641,8 +682,8 @@ export default function FormSubmissionPage() {
 						{...register(field.key)}
 						type='text'
 						className={`w-full px-4 py-3 border rounded-lg shadow-sm focus:outline-none focus:ring-2 ${error
-								? 'border-red-500 focus:ring-red-500'
-								: 'border-gray-300 focus:border-indigo-500 focus:ring-indigo-500'
+							? 'border-red-500 focus:ring-red-500'
+							: 'border-gray-300 focus:border-indigo-500 focus:ring-indigo-500'
 							}`}
 						placeholder={placeholder || ''}
 						disabled={isSubmitting}
@@ -746,8 +787,8 @@ export default function FormSubmissionPage() {
 								<button
 									onClick={() => setActiveTab('form')}
 									className={`cursor-pointer whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm flex items-center space-x-2 ${activeTab === 'form'
-											? 'border-indigo-500 text-indigo-600'
-											: 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+										? 'border-indigo-500 text-indigo-600'
+										: 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
 										}`}
 								>
 									<FiFileText className='h-4 w-4' />
@@ -758,8 +799,8 @@ export default function FormSubmissionPage() {
 									<button
 										onClick={() => setActiveTab('submissions')}
 										className={`whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm flex items-center space-x-2 ${activeTab === 'submissions'
-												? 'border-indigo-500 text-indigo-600'
-												: 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+											? 'border-indigo-500 text-indigo-600'
+											: 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
 											}`}
 									>
 										<FiList className='h-4 w-4' />

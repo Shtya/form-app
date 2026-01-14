@@ -17,10 +17,19 @@ import { DynamicImage } from '../../utils/DynamicImg';
 import { HiEyeOff } from 'react-icons/hi';
 import ProjectsTab from '../../components/atoms/ProjectsTab';
 import UsersTab from '../../components/atoms/UsersTab';
+import { Check, Pencil, X } from 'lucide-react';
 
 // Translation objects
 const translations = {
 	en: {
+		"confirmDeleteTitle": "Confirm deletion",
+		"confirmDeleteSubmission": "Are you sure you want to delete this submission? This action cannot be undone.",
+		"delete": "Delete",
+		"deleting": "Deleting...",
+		"cancel": "Cancel",
+		"submissionDeleted": "Submission deleted successfully",
+		"deleteSubmissionError": "Failed to delete submission",
+		searchWithNationalID: 'Search by National ID',
 		"copyUrl": "Copy URL",
 		"fileDeleted": "File deleted successfully",
 		"deleteError": "Failed to delete file",
@@ -238,6 +247,14 @@ const translations = {
 		no_forms_available: 'No forms available',
 	},
 	ar: {
+		"confirmDeleteTitle": "تأكيد الحذف",
+		"confirmDeleteSubmission": "هل أنت متأكد أنك تريد حذف هذا الإرسال؟ لا يمكن التراجع عن هذا الإجراء.",
+		"delete": "حذف",
+		"deleting": "جارٍ الحذف...",
+		"cancel": "إلغاء",
+		"submissionDeleted": "تم حذف الإرسال بنجاح",
+		"deleteSubmissionError": "حدث خطأ أثناء حذف الإرسال",
+		searchWithNationalID: 'البحث باستخدام رقم الهوية',
 		"copyUrl": "نسخ الرابط",
 		"fileDeleted": "تم حذف الملف بنجاح",
 		"deleteError": "فشل في حذف الملف",
@@ -485,8 +502,70 @@ const fieldSchema = yup.object().shape({
 	required: yup.boolean(),
 });
 
+
+const IMG_EXTS = ['png', 'jpg', 'jpeg', 'webp', 'gif', 'bmp', 'svg'];
+
+const getUrlExt = (url = '') => {
+	const clean = String(url).split('?')[0].split('#')[0];
+	const last = clean.split('/').pop() || '';
+	const dot = last.lastIndexOf('.');
+	return dot >= 0 ? last.slice(dot + 1).toLowerCase() : '';
+};
+
+const isImageByExt = (url = '') => IMG_EXTS.includes(getUrlExt(url));
+
+const toFileUrl = (value, baseImg) => {
+	if (!value) return '';
+	if (String(value).startsWith('http')) return String(value);
+	return baseImg + String(value);
+};
+
+
 const SubmissionDetails = ({ submission, onClose, t }) => {
 	if (!submission) return null;
+
+
+	const renderFileLike = (rawUrl) => {
+		const url = typeof rawUrl === 'string' ? rawUrl : '';
+		if (!url) return null;
+
+		const fullUrl = toFileUrl(url, baseImg); // لو عندك baseImg في الملف (import)
+		const isImg = isImageByExt(url) || isImageByExt(fullUrl);
+
+		if (isImg) {
+			// صورة
+			return (
+				<a href={fullUrl} target="_blank" rel="noopener noreferrer" className="inline-block">
+					<img
+						src={fullUrl}
+						alt="Uploaded content"
+						className="h-24 w-24 object-contain rounded border border-slate-200 bg-white p-1"
+					/>
+				</a>
+			);
+		}
+
+		// ملف مش صورة
+		return (
+			<div className="flex items-center gap-3 rounded-lg border bg-gray-50 p-3">
+				<div className="h-10 w-10 rounded bg-gray-100 flex items-center justify-center">
+					<FiFile className="h-5 w-5 text-gray-500" />
+				</div>
+				<div className="flex flex-col">
+					<span className="text-xs text-gray-700 break-all">{url}</span>
+					<a
+						href={fullUrl}
+						target="_blank"
+						rel="noopener noreferrer"
+						className="text-xs text-indigo-600 hover:underline w-fit"
+					>
+						Open / Download
+					</a>
+				</div>
+			</div>
+		);
+	};
+
 
 	return (
 		<div className='space-y-6'>
@@ -522,42 +601,33 @@ const SubmissionDetails = ({ submission, onClose, t }) => {
 						</tr>
 					</thead>
 					<tbody className='divide-y divide-gray-200 bg-white'>
-						{Object.entries(submission.answers).map(([question, answer]) => (
-							<tr key={question}>
-								<td className='whitespace-normal py-2 pl-4 pr-3 text-xs font-medium text-gray-900 sm:pl-6'>{question}</td>
-								<td className='px-3 py-2 text-xs text-gray-500'>
-									{Array.isArray(answer) ? (
-										<ul className='list-disc pl-5 space-y-1'>
-											{answer.map((item, i) => (
-												<li key={i}>{item}</li>
-											))}
-										</ul>
-									) : typeof answer === 'object' && answer !== null ? (
-										answer.url ? (
-											answer.url.startsWith('uploads/') ? (
-												<DynamicImage src={answer.url} alt='Uploaded content' className='max-w-full h-auto' />
+						{Object.entries(submission.answers)
+							.filter(([question]) => !String(question).toLowerCase().endsWith('_asset'))
+							.map(([question, answer]) => (
+
+								<tr key={question}>
+									<td className='whitespace-normal py-2 pl-4 pr-3 text-xs font-medium text-gray-900 sm:pl-6'>{question}</td>
+									<td className='px-3 py-2 text-xs text-gray-500'>
+										{Array.isArray(answer) ? (
+											<ul className='list-disc pl-5 space-y-1'>
+												{answer.map((item, i) => (
+													<li key={i}>{item}</li>
+												))}
+											</ul>
+										) : typeof answer === 'string' && answer.startsWith('uploads/') ? (
+											renderFileLike(answer)
+										) : answer ? (
+											typeof answer === 'string' && answer.startsWith('uploads') ? (
+												renderFileLike(answer)
 											) : (
-												<a href={answer.url} target='_blank' rel='noopener noreferrer' className='text-blue-600 hover:underline'>
-													{answer.url}
-												</a>
+												answer
 											)
 										) : (
-											<pre className='whitespace-pre-wrap font-sans text-sm bg-gray-50 p-2 rounded'>{JSON.stringify(answer, null, 2)}</pre>
-										)
-									) : typeof answer === 'string' && answer.startsWith('uploads/') ? (
-										<DynamicImage src={answer} alt='Uploaded content' className='max-w-full h-auto' />
-									) : answer ? (
-										typeof answer === 'string' && answer.startsWith('uploads') ? (
-											<DynamicImage src={answer} alt='Uploaded content' className='max-w-full h-auto' />
-										) : (
-											answer
-										)
-									) : (
-										<span className='text-gray-400 italic'>{t('noResponse')}</span>
-									)}
-								</td>
-							</tr>
-						))}
+											<span className='text-gray-400 italic'>{t('noResponse')}</span>
+										)}
+									</td>
+								</tr>
+							))}
 					</tbody>
 				</table>
 			</div>
@@ -717,6 +787,14 @@ export default function DashboardPage() {
 	const fileUploadInputRef = useRef(null);
 	const [deletingSubmissions, setDeletingSubmissions] = useState({});
 	const t = key => translations[language][key] || key;
+	const [subSearch, setSubSearch] = useState('');
+	const [editingFormId, setEditingFormId] = useState(null);
+	const [editedTitle, setEditedTitle] = useState('');
+	const [deletePopup, setDeletePopup] = useState({
+		open: false,
+		submissionId: null,
+	});
+
 
 	useEffect(() => {
 		// Load language preference from localStorage
@@ -803,8 +881,16 @@ export default function DashboardPage() {
 		limit: selectedLimit.toString(),
 		...(selectedFormId !== 'all' && { form_id: selectedFormId }),
 		...(selectedProjectId !== 'all' && { project_id: selectedProjectId }),
+		...(subSearch.trim() && { search: subSearch.trim() }),
+
 	});
 
+	useEffect(() => {
+		if (activeTab === 'submissions') {
+			setCurrentPage(1);
+			fetchData();
+		}
+	}, [subSearch]);
 
 	const fetchData = async () => {
 		if (!user) return
@@ -955,8 +1041,8 @@ export default function DashboardPage() {
 	const handleAddField = async fieldData => {
 		try {
 			const fieldKey = fieldData.label ? fieldData.label.toLowerCase().replace(/\s+/g, '-') : null;
-			// التحقق إن كان المفتاح موجود مسبقًا
 			const keyExists = selectedForm?.fields?.some(field => field.key === fieldKey);
+			const currentFields = Array.isArray(selectedForm?.fields) ? selectedForm.fields : [];
 
 			if (keyExists && !editField) {
 				toast.error(t('fieldKeyAlreadyExists') || 'Cannot add field: key already exists.');
@@ -968,14 +1054,18 @@ export default function DashboardPage() {
 				key: fieldKey,
 				options: fieldData.type === 'radio' || fieldData.type === 'checklist' || fieldData.type === 'select' ? tempOptions.split(',').map(opt => opt.trim()) : [],
 			};
-			if (!editField) fieldToAdd['order'] = selectedForm.fields?.length + 1;
+			if (!editField) fieldToAdd.order = currentFields.length + 1;
+
 
 			let updatedFields;
 			if (editField) {
-				updatedFields = selectedForm.fields.map(f => (f.id === editField.id ? { ...f, ...fieldToAdd } : f));
+				updatedFields = currentFields.map(f => (f.id === editField.id ? { ...f, ...fieldToAdd } : f));
 			} else {
 				const response = await api.post(`/forms/${selectedForm.id}/fields`, { fields: [fieldToAdd] });
-				updatedFields = [...selectedForm.fields, ...(response.data.fields || response.data)];
+				const returned = response.data?.fields ?? response.data ?? [];
+				const returnedArr = Array.isArray(returned) ? returned : [returned];
+
+				updatedFields = [...currentFields, ...returnedArr];
 			}
 
 			const updatedForm = {
@@ -1577,33 +1667,57 @@ export default function DashboardPage() {
 
 
 	const renderSubmissionTable = () => {
-		// Add a state for tracking which submissions are being deleted
+		const requestDeleteSubmission = (submissionId) => {
+			setDeletePopup({ open: true, submissionId });
+		};
 
-
-		const handleDeleteSubmission = async (submissionId) => {
-			if (!confirm(t('confirmDeleteSubmission') || 'Are you sure you want to delete this submission?')) {
-				return;
-			}
-
-			// Set loading for this specific submission
+		const handleDeleteConfirmed = async () => {
+			const submissionId = deletePopup.submissionId;
+			if (!submissionId) return;
 			setDeletingSubmissions(prev => ({ ...prev, [submissionId]: true }));
 
 			try {
 				await api.delete(`/form-submissions/${submissionId}`);
-				// Remove from local state
-				setSubmissions(submissions.filter(s => s.id !== submissionId));
+
+				// Remove from local state (استخدم functional update لتجنب stale state)
+				setSubmissions(prev => prev.filter(s => s.id !== submissionId));
+
 				toast.success(t('submissionDeleted'));
+				setDeletePopup({ open: false, submissionId: null });
 			} catch (error) {
 				console.error('Failed to delete submission:', error);
 				toast.error(error.response?.data?.message || t('deleteSubmissionError'));
 			} finally {
-				// Clear loading state
 				setDeletingSubmissions(prev => ({ ...prev, [submissionId]: false }));
 			}
 		};
 
+
 		if (isLoading.submissions) return <SkeletonLoader count={5} />;
-		const filteredSubmissions = submissions;
+		const q = subSearch.trim().toLowerCase();
+
+		const filteredSubmissions = submissions.filter((s) => {
+			if (!q) return true;
+
+			// search by user national id (email field)
+			const userEmail = (s?.user?.email || '').toLowerCase();
+
+			// search by project name
+			const projectName = (s?.user?.project?.name || '').toLowerCase();
+
+			// search inside answers (any value)
+			const answersText = Object.values(s?.answers || {})
+				.map(v => (typeof v === 'string' ? v : JSON.stringify(v)))
+				.join(' ')
+				.toLowerCase();
+
+			return (
+				userEmail.includes(q) ||
+				projectName.includes(q) ||
+				answersText.includes(q)
+			);
+		});
+
 		if (filteredSubmissions.length === 0) return <div className='text-center py-8 text-gray-500'>{t('noSubmissions')}</div>;
 
 		const allKeys = filteredSubmissions.reduce((keys, submission) => {
@@ -1692,7 +1806,7 @@ export default function DashboardPage() {
 													</div>
 												) : (
 													<div className="flex items-center gap-2">
-														 
+
 														<a
 															href={fileUrl}
 															download
@@ -1725,7 +1839,7 @@ export default function DashboardPage() {
 															</div>
 														</div>
 													) : (
-														<div className="flex items-center gap-2"> 
+														<div className="flex items-center gap-2">
 															<a
 																href={fileUrl}
 																download
@@ -1780,7 +1894,8 @@ export default function DashboardPage() {
 
 									<td className='px-6 py-4 whitespace-nowrap text-sm text-gray-500'>
 										<button
-											onClick={() => handleDeleteSubmission(submission.id)}
+											onClick={() => requestDeleteSubmission(submission.id)}
+
 											disabled={deletingSubmissions[submission.id]}
 											className={`text-red-600 hover:text-red-900 cursor-pointer flex items-center justify-center ${deletingSubmissions[submission.id] ? 'opacity-50 cursor-not-allowed' : ''}`}
 											title={t('delete')}
@@ -1841,6 +1956,52 @@ export default function DashboardPage() {
 						<FiChevronRight className='h-4 w-4' />
 					</button>
 				</div>
+
+
+				{deletePopup.open && (
+					<div className="fixed inset-0 z-50 flex items-center justify-center">
+						{/* Backdrop */}
+						<button
+							className="absolute inset-0 bg-black/40"
+							onClick={() => setDeletePopup({ open: false, submissionId: null })}
+							aria-label="Close"
+						/>
+
+						{/* Modal */}
+						<div className="relative w-[92vw] max-w-md rounded-2xl bg-white shadow-xl">
+							<div className="p-5">
+								<h3 className="text-base font-semibold text-slate-900">
+									{t('confirmDeleteTitle') || 'Confirm delete'}
+								</h3>
+
+								<p className="mt-2 text-sm text-slate-600">
+									{t('confirmDeleteSubmission') || 'Are you sure you want to delete this submission?'}
+								</p>
+
+								<div className="mt-5 flex items-center justify-end gap-2">
+									<button
+										onClick={() => setDeletePopup({ open: false, submissionId: null })}
+										className="h-9 rounded-lg px-3 text-sm font-medium text-slate-700 hover:bg-slate-100 transition"
+										disabled={deletingSubmissions[deletePopup.submissionId]}
+									>
+										{t('cancel') || 'Cancel'}
+									</button>
+
+									<button
+										onClick={handleDeleteConfirmed}
+										className="h-9 rounded-lg bg-rose-600 px-3 text-sm font-semibold text-white hover:bg-rose-700 active:scale-[0.98] transition disabled:opacity-60"
+										disabled={deletingSubmissions[deletePopup.submissionId]}
+									>
+										{deletingSubmissions[deletePopup.submissionId]
+											? (t('deleting') || 'Deleting...')
+											: (t('delete') || 'Delete')}
+									</button>
+								</div>
+							</div>
+						</div>
+					</div>
+				)}
+
 			</>
 		);
 	};
@@ -1862,6 +2023,45 @@ export default function DashboardPage() {
 			toast.error(t('deleteError') || 'Failed to delete file');
 		}
 	};
+
+
+	const q = subSearch.trim().toLowerCase();
+	const filteredCount = submissions.filter((s) => {
+		if (!q) return true;
+		const userEmail = (s?.user?.email || '').toLowerCase();
+		const projectName = (s?.user?.project?.name || '').toLowerCase();
+		const answersText = Object.values(s?.answers || {})
+			.map(v => (typeof v === 'string' ? v : JSON.stringify(v)))
+			.join(' ')
+			.toLowerCase();
+		return userEmail.includes(q) || projectName.includes(q) || answersText.includes(q);
+	}).length;
+
+
+	const handleSaveTitle = async (formId) => {
+		if (!editedTitle.trim()) return;
+
+		try {
+			await api.patch(`/forms/${formId}/title`, {
+				title: editedTitle,
+			});
+
+			toast.success('تم تحديث عنوان النموذج');
+
+			// تحديث الواجهة
+			setForms((prev) =>
+				prev.map((f) =>
+					f.id === formId ? { ...f, title: editedTitle } : f
+				)
+			);
+
+			setEditingFormId(null);
+		} catch (error) {
+			toast.error('فشل تحديث العنوان');
+		}
+	};
+
+
 	return (
 		<div className='min-h-screen bg-gradient-to-br from-gray-50 to-gray-100' dir={language === 'ar' ? 'rtl' : 'ltr'}>
 			<header className='bg-white shadow-sm sticky top-0 z-40'>
@@ -1870,7 +2070,7 @@ export default function DashboardPage() {
 						<div className='flex flex-col items-start gap-0 leading-tight'>
 							<h1 className='text-2xl font-bold text-gray-800'>{t('dashboard')}</h1>
 							<div className='text-xs text-gray-600 flex items-center gap-1'>
-								{t('welcome')},<span className='text-sm font-semibold text-indigo-600 capitalize'>{user?.name}</span>
+								{t('welcome')},<span className='text-sm font-semibold text-indigo-600  font-[inter] ' >{user?.name}</span>
 							</div>
 						</div>
 					</div>
@@ -2007,7 +2207,56 @@ export default function DashboardPage() {
 													</div>
 													<div>
 														<div className='flex items-center gap-2'>
-															<h3 className='font-semibold text-gray-800 group-hover:text-indigo-600 transition-colors'>{form.title}</h3>
+															{editingFormId === form.id ? (
+																<div className="flex items-center gap-2 rounded-lg bg-slate-50 px-2 py-1 shadow-sm">
+																	<input
+																		value={editedTitle}
+																		onChange={(e) => setEditedTitle(e.target.value)}
+																		autoFocus
+																		placeholder="Form title"
+																		className=" w-full bg-transparent text-sm text-slate-800 placeholder:text-slate-400 outline-none focus:ring-2 focus:ring-indigo-500/40 rounded-md px-2 py-1 transition "
+																	/>
+
+																	{/* Save */}
+																	<button
+																		onClick={() => handleSaveTitle(form.id)}
+																		title="حفظ"
+																		className=" flex-none flex items-center justify-center h-8 w-8 rounded-full bg-green-100 text-green-700 hover:bg-green-200 active:scale-95 transition "
+																	>
+																		<Check size={16} strokeWidth={2.2} />
+																	</button>
+
+																	{/* Cancel */}
+																	<button
+																		onClick={() => setEditingFormId(null)}
+																		title="إلغاء"
+																		className=" flex-none flex items-center justify-center h-8 w-8 rounded-full bg-slate-200 text-slate-600 hover:bg-slate-300 active:scale-95 transition "
+																	>
+																		<X size={16} strokeWidth={2.2} />
+																	</button>
+																</div>
+
+															) : (
+																<div className="group flex items-center gap-2">
+																	<h3 className="text-lg font-semibold text-slate-800 tracking-tight">
+																		{form.title}
+																	</h3>
+
+																	{/* Edit */}
+																	<button
+																		onClick={() => {
+																			setEditingFormId(form.id);
+																			setEditedTitle(form.title);
+																		}}
+																		title="تعديل العنوان"
+																		className=" inline-flex items-center justify-center h-8 w-8 rounded-full bg-indigo-50 text-indigo-700 hover:bg-indigo-100  active:scale-95 transition "
+																	>
+																		<Pencil size={16} strokeWidth={2.2} />
+																	</button>
+																</div>
+
+															)}
+
 															{form.isActive && <span className='inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800'>{t('active')}</span>}
 														</div>
 														<p className='text-sm text-gray-600 mt-1 line-clamp-2'>{form.description || t('noDescription')}</p>
@@ -2247,12 +2496,27 @@ export default function DashboardPage() {
 									{t('formSubmissions')}
 								</h2>
 								<p className='text-sm text-gray-500 mt-1'>
-									{selectedFormId == 'all' ? submissions.length : submissions?.filter(e => e.form_id == selectedFormId).length} {t('totalSubmissions')}
+									{subSearch ? filteredCount : (selectedFormId == 'all' ? submissions.length : submissions?.filter(e => e.form_id == selectedFormId).length)} {t('totalSubmissions')}
 								</p>
+
 							</div>
 
 							{/* Form ID Filter Dropdown */}
 							<div className='flex flex-wrap items-center gap-2'>
+
+								<div className="relative">
+									<input
+										value={subSearch}
+										onChange={(e) => {
+											setSubSearch(e.target.value);
+											setCurrentPage(1);
+										}}
+										placeholder={t('searchWithNationalID') + '...'}
+										className="w-[220px] border border-gray-300 rounded-md px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+									/>
+								</div>
+
+
 								<select id='formFilter' value={selectedFormId} onChange={e => setSelectedFormId(e.target.value)} className=' truncate !w-[150px] !max-w-fit border border-gray-300 rounded-md px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500'>
 									<option value='all'>{t('allForms')}</option>
 									{Array.from(new Set(submissions.map(s => s.form_id))).map(formId => (
@@ -2784,6 +3048,9 @@ export default function DashboardPage() {
 					</div>
 				</div>
 			</Modal>
+
+
+
 		</div>
 	);
 }
