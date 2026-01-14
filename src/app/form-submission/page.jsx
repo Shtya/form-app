@@ -446,6 +446,7 @@ export default function FormSubmissionPage() {
 			case 'number':
 			case 'email':
 				return (
+<<<<<<< HEAD
 					<input
 						{...register(field.key)}
 						type={field.type}
@@ -457,6 +458,32 @@ export default function FormSubmissionPage() {
 						disabled={isSubmitting}
 						dir={language === 'ar' ? 'rtl' : 'ltr'}
 					/>
+=======
+					<div>
+						<input
+							{...register(field.key)}
+							type={field.type}
+							maxLength={field.length}
+							onInput={e => {
+								if (field.type === 'number' && field.length && e.target.value.length > field.length) {
+									e.target.value = e.target.value.slice(0, field.length);
+								}
+							}}
+							className={`w-full px-4 py-3 border rounded-lg shadow-sm focus:outline-none focus:ring-2 ${error
+									? 'border-red-500 focus:ring-red-500'
+									: 'border-gray-300 focus:border-indigo-500 focus:ring-indigo-500'
+								}`}
+							placeholder={placeholder || ''}
+							disabled={isSubmitting}
+							dir={language === 'ar' ? 'rtl' : 'ltr'}
+						/>
+						{field.length && (
+							<div className='text-xs text-gray-500 mt-1 text-end'>
+								{String(fieldValue || '').length} / {field.length}
+							</div>
+						)}
+					</div>
+>>>>>>> c8771a5c918a36754a17b8eb4ab38538f4ccdb76
 				);
 
 			case 'date':
@@ -496,6 +523,7 @@ export default function FormSubmissionPage() {
 
 			case 'textarea':
 				return (
+<<<<<<< HEAD
 					<textarea
 						{...register(field.key)}
 						rows={4}
@@ -507,6 +535,27 @@ export default function FormSubmissionPage() {
 						disabled={isSubmitting}
 						dir={language === 'ar' ? 'rtl' : 'ltr'}
 					/>
+=======
+					<div>
+						<textarea
+							{...register(field.key)}
+							maxLength={field.length}
+							rows={4}
+							className={`w-full px-4 py-3 border rounded-lg shadow-sm focus:outline-none focus:ring-2 ${error
+									? 'border-red-500 focus:ring-red-500'
+									: 'border-gray-300 focus:border-indigo-500 focus:ring-indigo-500'
+								}`}
+							placeholder={placeholder || ''}
+							disabled={isSubmitting}
+							dir={language === 'ar' ? 'rtl' : 'ltr'}
+						/>
+						{field.length && (
+							<div className='text-xs text-gray-500 mt-1 text-end'>
+								{String(fieldValue || '').length} / {field.length}
+							</div>
+						)}
+					</div>
+>>>>>>> c8771a5c918a36754a17b8eb4ab38538f4ccdb76
 				);
 
 			case 'select':
@@ -663,6 +712,7 @@ export default function FormSubmissionPage() {
 
 			case 'phone':
 				return (
+<<<<<<< HEAD
 					<input
 						{...register(field.key)}
 						type='tel'
@@ -674,6 +724,27 @@ export default function FormSubmissionPage() {
 						placeholder={placeholder || 'مثال: 966512345678'}
 						disabled={isSubmitting}
 					/>
+=======
+					<div>
+						<input
+							{...register(field.key)}
+							type='tel'
+							maxLength={field.length}
+							defaultValue='966'
+							className={`w-full px-4 py-3 border rounded-lg shadow-sm focus:outline-none focus:ring-2 ${error
+									? 'border-red-500 focus:ring-red-500'
+									: 'border-gray-300 focus:border-indigo-500 focus:ring-indigo-500'
+								}`}
+							placeholder={placeholder || 'مثال: 966512345678'}
+							disabled={isSubmitting}
+						/>
+						{field.length && (
+							<div className='text-xs text-gray-500 mt-1 text-end'>
+								{String(fieldValue || '').length} / {field.length}
+							</div>
+						)}
+					</div>
+>>>>>>> c8771a5c918a36754a17b8eb4ab38538f4ccdb76
 				);
 
 			default:

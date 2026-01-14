@@ -46,6 +46,7 @@ const translations = {
 		exportFailed: 'Export failed',
 		exportHint: 'Set how many users to include. Current filters (search) will be applied.',
 		limit: 'Limit',
+		length: 'Length',
 		currentSearch: 'Current search',
 		none: 'none',
 		cancel: 'Cancel',
@@ -271,6 +272,7 @@ const translations = {
 		exportFailed: 'فشل التصدير',
 		exportHint: 'حدد عدد المستخدمين المطلوب تضمينهم. سيتم تطبيق عوامل التصفية الحالية (البحث).',
 		limit: 'الحد',
+		length: 'المدة',
 		currentSearch: 'البحث الحالي',
 		none: 'لا يوجد',
 		cancel: 'إلغاء',
@@ -500,6 +502,7 @@ const fieldSchema = yup.object().shape({
 	placeholder: yup.string(), // Now optional (no .required())
 	type: yup.string().required('Type is required'),
 	required: yup.boolean(),
+	length: yup.number().nullable().transform((value, originalValue) => (String(originalValue).trim() === '' ? null : value)),
 });
 
 
@@ -1194,6 +1197,7 @@ export default function DashboardPage() {
 		setFieldValue('placeholder', field.placeholder);
 		setFieldValue('type', field.type);
 		setFieldValue('required', field.required);
+		setFieldValue('length', field.length);
 		if (field.options) {
 			setTempOptions(field.options.join(', '));
 		}
@@ -2415,6 +2419,12 @@ export default function DashboardPage() {
 																							))}
 																						</div>
 																					)}
+
+																					{field.length && (
+																						<p className='text-xs text-indigo-600 bg-indigo-50 px-2 py-1 rounded inline-block mt-1'>
+																							{t('length')}: {field.length}
+																						</p>
+																					)}
 																				</div>
 
 																				<div className='flex items-center gap-1 '>
@@ -2446,6 +2456,7 @@ export default function DashboardPage() {
 										<button
 											onClick={() => {
 												setEditField(null);
+												resetFieldForm({ type: 'text', required: false });
 												setShowNewFieldModal(true);
 											}}
 											className='group mt-6 w-full flex items-center justify-center gap-3 bg-white border border-dashed border-gray-300 rounded-lg p-4 text-gray-500 hover:border-indigo-400 hover:text-indigo-600 hover:bg-indigo-50 transition-all duration-200 shadow-xs hover:shadow-sm'>
@@ -2636,6 +2647,21 @@ export default function DashboardPage() {
 							<input type='text' id='field-placeholder' className={`mt-1 block w-full border ${fieldErrors.placeholder ? 'border-red-300' : 'border-gray-300'} rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500`} {...registerField('placeholder')} />
 							{fieldErrors.placeholder && <p className='mt-1 text-sm text-red-600'>{fieldErrors.placeholder.message}</p>}
 						</div>
+
+						{(fieldType === 'text' || fieldType === 'textarea' || fieldType === 'number' || fieldType === 'email' || fieldType === 'phone') && (
+							<div>
+								<label htmlFor='field-length' className='block text-sm font-medium text-gray-700'>
+									{t('length')}
+								</label>
+								<input 
+									type='number' 
+									id='field-length' 
+									className={`mt-1 block w-full border ${fieldErrors.length ? 'border-red-300' : 'border-gray-300'} rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500`} 
+									{...registerField('length')} 
+								/>
+								{fieldErrors.length && <p className='mt-1 text-sm text-red-600'>{fieldErrors.length.message}</p>}
+							</div>
+						)}
 
 						<div>
 							<label htmlFor='field-type' className='block text-sm font-medium text-gray-700'>
