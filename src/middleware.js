@@ -6,7 +6,7 @@ const JWT_SECRET = new TextEncoder().encode(process.env.JWT_SECRET);
 export async function middleware(request) {
   const { pathname } = request.nextUrl;
 
-  const protectedRoutes = ['/dashboard', '/form-submission'];
+  const protectedRoutes = ['/dashboard', '/form-submission', '/employee-requests'];
   const isProtectedRoute = protectedRoutes.some(route => pathname.startsWith(route));
 
   const userCookieValue = request.cookies.get('user')?.value;
@@ -54,6 +54,12 @@ export async function middleware(request) {
     if (pathname.startsWith('/form-submission') && decoded.role !== 'user') {
       return NextResponse.redirect(new URL('/dashboard', request.url));
     }
+
+    // Only users should access employee-requests
+    if (pathname.startsWith('/employee-requests') && decoded.role !== 'user') {
+       return NextResponse.redirect(new URL('/dashboard', request.url));
+    }
+
   } catch (error) {
     console.error('❌ خطأ في JWT:', error.message);
     return NextResponse.redirect(new URL('/login', request.url));
