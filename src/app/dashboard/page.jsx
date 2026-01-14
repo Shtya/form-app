@@ -899,7 +899,7 @@ export default function DashboardPage() {
 		if (!user) return
 		try {
 			setIsLoading(prev => ({ ...prev, [activeTab]: true }));
-			const url = user?.role == "supervisor" ? "/forms/supervisor" : '/forms'
+			const url = user?.role == "supervisor" ? "/forms/supervisor?limit=1000" : '/forms?limit=1000'
 			const formsRes = await api.get(url);
 			setForms(formsRes.data.data || formsRes.data);
 
