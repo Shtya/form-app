@@ -18,6 +18,7 @@ import { HiEyeOff } from 'react-icons/hi';
 import ProjectsTab from '../../components/atoms/ProjectsTab';
 import UsersTab from '../../components/atoms/UsersTab';
 import { Check, Pencil, X } from 'lucide-react';
+import EmployeeRequestsTab from '../../components/atoms/EmployeeRequestsTab';
 
 // Translation objects
 const translations = {
@@ -246,6 +247,23 @@ const translations = {
 		select_form: 'Select Form',
 		form_required: 'Form is required',
 		no_forms_available: 'No forms available',
+
+        type: 'Form Type',
+        project_type: 'Project Form',
+        employee_request_type: 'Employee Request Form',
+        approvalFlow: 'Approval Flow',
+        none: 'None (Direct)',
+        hr_only: 'HR Only',
+        supervisor_only: 'Supervisor Only',
+        hr_then_supervisor: 'HR then Supervisor',
+        supervisor_then_hr: 'Supervisor then HR',
+        employeeRequests: 'Employee Requests',
+        pending_hr: 'Pending HR',
+        pending_supervisor: 'Pending Supervisor',
+        approved: 'Approved',
+        rejected: 'Rejected',
+        approve: 'Approve',
+        reject: 'Reject',
 	},
 	ar: {
 		"confirmDeleteTitle": "تأكيد الحذف",
@@ -469,7 +487,22 @@ const translations = {
 		form_required: 'النموذج مطلوب',
 		no_forms_available: 'لا توجد نماذج متاحة',
 
-
+        type: 'نوع النموذج',
+        project_type: 'نموذج مشروع',
+        employee_request_type: 'نموذج طلب موظف',
+        approvalFlow: 'مسار الاعتماد',
+        none: 'بدون (مباشر)',
+        hr_only: 'الموارد البشرية فقط',
+        supervisor_only: 'المشرف المباشر فقط',
+        hr_then_supervisor: 'الموارد البشرية ثم المشرف',
+        supervisor_then_hr: 'المشرف ثم الموارد البشرية',
+        employeeRequests: 'طلبات الموظفين',
+        pending_hr: 'بانتظار الموارد البشرية',
+        pending_supervisor: 'بانتظار المشرف',
+        approved: 'مقبول',
+        rejected: 'مرفوض',
+        approve: 'موافقة',
+        reject: 'رفض',
 	},
 };
 
@@ -494,6 +527,8 @@ const userSchema = yup.object().shape({
 const formSchema = yup.object().shape({
 	title: yup.string().required('Title is required'),
 	description: yup.string(),
+    type: yup.string().oneOf(['project', 'employee_request']).default('project'),
+    approvalFlow: yup.string().nullable().oneOf(['none', 'hr_only', 'supervisor_only', 'hr_then_supervisor', 'supervisor_then_hr']).default('none'),
 });
 
 const fieldSchema = yup.object().shape({
@@ -848,11 +883,18 @@ export default function DashboardPage() {
 	const {
 		register: registerForm,
 		handleSubmit: handleFormSubmit,
+		watch: watchForm,
 		formState: { errors: formErrors },
 		reset: resetFormForm,
 	} = useForm({
 		resolver: yupResolver(formSchema),
+		defaultValues: {
+			type: 'project',
+			approvalFlow: 'none',
+		}
 	});
+
+    const formType = watchForm('type');
 
 	const {
 		register: registerField,
@@ -871,6 +913,10 @@ export default function DashboardPage() {
 		const savedTab = localStorage.getItem('adminActiveTab');
 		if (savedTab) setActiveTab(savedTab);
 	}, []);
+
+    useEffect(() => {
+        localStorage.setItem('adminActiveTab', activeTab);
+    }, [activeTab]);
 
 	useEffect(() => {
 		if (!authLoading && user?.role === 'admin') {
@@ -1029,6 +1075,8 @@ export default function DashboardPage() {
 			const response = await api.post('/forms', {
 				title: formData.title,
 				description: formData.description,
+                type: formData.type || 'project',
+                approvalFlow: formData.approvalFlow || 'none',
 				fields: [],
 			});
 			setForms([response.data, ...forms]);
@@ -2135,6 +2183,14 @@ export default function DashboardPage() {
 							className={`block px-3 py-2 rounded-md text-base font-medium w-full text-left ${activeTab === 'templates' ? 'bg-indigo-50 text-indigo-700' : 'text-gray-700 hover:text-indigo-600 hover:bg-gray-50'}`}>
 							{t('templates') || 'Templates'}
 						</button>
+						<button
+							onClick={() => {
+								setActiveTab('employeeRequests');
+								setIsMobileMenuOpen(false);
+							}}
+							className={`block px-3 py-2 rounded-md text-base font-medium w-full text-left ${activeTab === 'employeeRequests' ? 'bg-indigo-50 text-indigo-700' : 'text-gray-700 hover:text-indigo-600 hover:bg-gray-50'}`}>
+							{t('employeeRequests')}
+						</button>
 					</div>
 				</div>
 			)}
@@ -2158,6 +2214,10 @@ export default function DashboardPage() {
 						<button onClick={() => setActiveTab('projects')} className={`whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm flex items-center space-x-2 ${activeTab === 'projects' ? 'border-indigo-500 text-indigo-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'} cursor-pointer`}>
 							<FiUser className='h-4 w-4' />
 							<span>{t('projects')}</span>
+						</button>
+						<button onClick={() => setActiveTab('employeeRequests')} className={`whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm flex items-center space-x-2 ${activeTab === 'employeeRequests' ? 'border-indigo-500 text-indigo-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'} cursor-pointer`}>
+							<FiList className='h-4 w-4' />
+							<span>{t('employeeRequests')}</span>
 						</button>
 						{/* <button onClick={() => setActiveTab('templates')} className={`whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm flex items-center space-x-2 ${activeTab === 'templates' ? 'border-indigo-500 text-indigo-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'} cursor-pointer`}>
 							<FiDownload className='h-4 w-4' />
@@ -2569,6 +2629,8 @@ export default function DashboardPage() {
 
 				{activeTab === 'projects' && <ProjectsTab user={user} t={t} />}
 
+                {activeTab === 'employeeRequests' && <EmployeeRequestsTab language={language} t={t} />}
+
 			</main>
 
 			{/* Modals */}
@@ -2595,6 +2657,29 @@ export default function DashboardPage() {
 							<textarea id='form-description' rows={3} className={`mt-1 block w-full border ${formErrors.description ? 'border-red-300' : 'border-gray-300'} rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500`} {...registerForm('description')} />
 							{formErrors.description && <p className='mt-1 text-sm text-red-600'>{formErrors.description.message}</p>}
 						</div>
+
+                        <div className='grid grid-cols-1 md:grid-cols-2 gap-4'>
+                            <div>
+                                <label className='block text-sm font-medium text-gray-700'>{t('type')}</label>
+                                <select className='mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500' {...registerForm('type')}>
+                                    <option value='project'>{t('project_type')}</option>
+                                    <option value='employee_request'>{t('employee_request_type')}</option>
+                                </select>
+                            </div>
+
+                            {formType === 'employee_request' && (
+                                <div>
+                                    <label className='block text-sm font-medium text-gray-700'>{t('approvalFlow')}</label>
+                                    <select className='mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500' {...registerForm('approvalFlow')}>
+                                        <option value='none'>{t('none')}</option>
+                                        <option value='hr_only'>{t('hr_only')}</option>
+                                        <option value='supervisor_only'>{t('supervisor_only')}</option>
+                                        <option value='hr_then_supervisor'>{t('hr_then_supervisor')}</option>
+                                        <option value='supervisor_then_hr'>{t('supervisor_then_hr')}</option>
+                                    </select>
+                                </div>
+                            )}
+                        </div>
 					</div>
 					<div className='bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse rounded-b-lg mt-4'>
 						<button type='submit' className='w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-indigo-600 text-base font-medium text-white hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:ml-3 sm:w-auto sm:text-sm cursor-pointer'>

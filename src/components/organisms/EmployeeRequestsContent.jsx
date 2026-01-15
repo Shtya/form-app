@@ -58,8 +58,7 @@ export default function EmployeeRequestsContent({ user, language, translations }
 
             try {
                 setCheckingStatus(true);
-                // Using the proxy endpoint we created in the backend: /users/employee-status/:email
-                // This avoids CORS issues and ensures we use the correct server-side environment variables.
+                console.log(process.env.TOKENJWT_SECRET)
                 const res = await api.get(`${process.env.NEST_PUBLIC_BASE_URL_2}/employees/by-email/${user.name}`, {
                     headers: {
                       Authorization: `Bearer ${process.env.TOKENJWT_SECRET}`
