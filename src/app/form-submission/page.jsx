@@ -15,6 +15,7 @@ import {
 	FiFile,
 	FiFileText,
 	FiList,
+    FiUser
 } from 'react-icons/fi';
 import { toast } from 'react-hot-toast';
 import { FaSpinner } from 'react-icons/fa6';
@@ -24,6 +25,7 @@ import 'flatpickr/dist/themes/light.css';
 import { motion } from 'framer-motion';
 import { LanguageToggle } from '../../components/atoms/SwitchLang';
 import { LogoutButton } from '../../components/atoms/LogoutButton';
+import EmployeeRequestsContent from '../../components/organisms/EmployeeRequestsContent';
 
 const SELECTED_SUB_KEY = 'selectedSubmissionId';
 
@@ -45,6 +47,8 @@ const translations = {
 			uploadDesc: 'Images or documents up to 5MB',
 			changeFile: 'Change File',
 			chooseSubmission: 'Choose Submission',
+            availableForms: 'Available Forms',
+            back: 'Back to Forms',
 		},
 		submissions: {
 			title: 'Your Submissions',
@@ -57,6 +61,14 @@ const translations = {
 			edit: 'Edit',
 			delete: 'Delete',
 			deleteConfirm: 'Are you sure you want to delete this submission?',
+            hr_only: 'HR Only',
+            supervisor_only: 'Supervisor Only',
+            hr_then_supervisor: 'HR then Supervisor',
+            supervisor_then_hr: 'Supervisor then HR',
+            pending_hr: 'Pending HR',
+            pending_supervisor: 'Pending Supervisor',
+            approved: 'Approved',
+            rejected: 'Rejected',
 		},
 		assets: { selectFile: 'Select or Upload File', yourFiles: 'Your Uploaded Files', upload: 'Upload' },
 	},
@@ -76,6 +88,8 @@ const translations = {
 			uploadDesc: 'صور أو مستندات حتى 5MB',
 			changeFile: 'تغيير الملف',
 			chooseSubmission: 'اختر التقديم',
+            availableForms: 'النماذج المتاحة',
+            back: 'العودة للنماذج',
 		},
 		submissions: {
 			title: 'تقديماتك',
@@ -88,6 +102,14 @@ const translations = {
 			edit: 'تعديل',
 			delete: 'حذف',
 			deleteConfirm: 'هل أنت متأكد أنك تريد حذف هذا التقديم؟',
+            hr_only: 'الموارد البشرية فقط',
+            supervisor_only: 'المشرف المباشر فقط',
+            hr_then_supervisor: 'الموارد البشرية ثم المشرف',
+            supervisor_then_hr: 'المشرف ثم الموارد البشرية',
+            pending_hr: 'بانتظار الموارد البشرية',
+            pending_supervisor: 'بانتظار المشرف',
+            approved: 'مقبول',
+            rejected: 'مرفوض',
 		},
 		assets: { selectFile: 'اختيار أو رفع ملف', yourFiles: 'الملفات المرفوعة', upload: 'رفع' },
 	},
@@ -96,6 +118,8 @@ const translations = {
 export default function FormSubmissionPage() {
 	const { user, loading, logout } = useAuth();
 	const router = useRouter();
+
+    const [mainTab, setMainTab] = useState('project'); // 'project' | 'employee'
 
 	const [activeForm, setActiveForm] = useState(null);
 	const [submissions, setSubmissions] = useState([]);
@@ -140,6 +164,11 @@ export default function FormSubmissionPage() {
 		}
 	}, [user, loading, router]);
 
+
+
+
+
+
 	// -----------------------
 	// helpers
 	// -----------------------
@@ -179,14 +208,14 @@ export default function FormSubmissionPage() {
 		try {
 			const [activeFormRes, submissionsRes, assetsRes] = await Promise.all([
 				api.get(user?.formId ? `/forms/${user?.formId}` : '/forms/active'),
-				api.get('/form-submissions'),
+				api.get('/form-submissions?type=project'), // Only project here? Or filter client side
 				api.get('/assets'),
 			]);
 
 			const sortedFields =
 				activeFormRes.data?.fields?.sort((a, b) => a.order - b.order) || [];
 			const assets = assetsRes.data?.data || [];
-			const subs = submissionsRes.data || [];
+			const subs = submissionsRes.data?.data || submissionsRes.data || [];
 
 			setActiveForm({ ...activeFormRes.data, fields: sortedFields });
 			setSubmissions(subs);
@@ -207,7 +236,8 @@ export default function FormSubmissionPage() {
 			}
 		} catch (error) {
 			console.error('Failed to fetch data:', error);
-			toast.error('Failed to load form data');
+			// toast.error('Failed to load form data'); 
+            // Only toast if it's a real error, not just no active form
 		} finally {
 			setIsLoading(false);
 		}
@@ -215,8 +245,10 @@ export default function FormSubmissionPage() {
 
 	useEffect(() => {
 		if (user?.role === 'user') fetchData();
+        // If mainTab is 'employee', the child component handles fetching.
 		// eslint-disable-next-line react-hooks/exhaustive-deps
 	}, [user]);
+
 
 	// -----------------------
 	// validation schema
@@ -393,18 +425,21 @@ export default function FormSubmissionPage() {
 	};
 
 	useEffect(() => {
-		// wait for everything needed to apply values
-		if (!activeForm?.fields?.length) return;
-		if (!userAssets) return;
-		if (!submissions?.length) return;
+        // Only run this alignment if we are in project tab/mode and data is loaded
+        if (mainTab !== 'project') return;
+        
+        // wait for everything needed to apply values
+        if (!activeForm?.fields?.length) return;
+        if (!userAssets) return;
+        if (!submissions?.length) return;
 
-		// if user already has saved selection, don't override it
-		const saved = localStorage.getItem(SELECTED_SUB_KEY);
-		if (saved) return;
+        // if user already has saved selection, don't override it
+        const saved = localStorage.getItem(SELECTED_SUB_KEY);
+        if (saved) return;
 
-		handleChooseSubmission(submissions[0].id);
-		// eslint-disable-next-line react-hooks/exhaustive-deps
-	}, [submissions, activeForm, userAssets]);
+        handleChooseSubmission(submissions[0].id);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [submissions, activeForm, userAssets, mainTab]);
 
 
 	// -----------------------
@@ -458,9 +493,9 @@ export default function FormSubmissionPage() {
 								}
 							}}
 							className={`w-full px-4 py-3 border rounded-lg shadow-sm focus:outline-none focus:ring-2 ${error
-								? 'border-red-500 focus:ring-red-500'
-								: 'border-gray-300 focus:border-indigo-500 focus:ring-indigo-500'
-								}`}
+ 									? 'border-red-500 focus:ring-red-500'
+ 									: 'border-gray-300 focus:border-indigo-500 focus:ring-indigo-500'
+ 								}`}
 							placeholder={placeholder || ''}
 							disabled={isSubmitting}
 							dir={language === 'ar' ? 'rtl' : 'ltr'}
@@ -499,9 +534,9 @@ export default function FormSubmissionPage() {
 									: undefined,
 						}}
 						className={`w-full px-4 py-3 border rounded-lg shadow-sm focus:outline-none focus:ring-2 ${error
-							? 'border-red-500 focus:ring-red-500'
-							: 'border-gray-300 focus:border-indigo-500 focus:ring-indigo-500'
-							}`}
+ 								? 'border-red-500 focus:ring-red-500'
+ 								: 'border-gray-300 focus:border-indigo-500 focus:ring-indigo-500'
+ 							}`}
 						placeholder={placeholder || 'Select date'}
 						disabled={isSubmitting}
 						dir={language === 'ar' ? 'rtl' : 'ltr'}
@@ -517,9 +552,9 @@ export default function FormSubmissionPage() {
 							maxLength={field.length}
 							rows={4}
 							className={`w-full px-4 py-3 border rounded-lg shadow-sm focus:outline-none focus:ring-2 ${error
-									? 'border-red-500 focus:ring-red-500'
-									: 'border-gray-300 focus:border-indigo-500 focus:ring-indigo-500'
-								}`}
+ 									? 'border-red-500 focus:ring-red-500'
+ 									: 'border-gray-300 focus:border-indigo-500 focus:ring-indigo-500'
+ 								}`}
 							placeholder={placeholder || ''}
 							disabled={isSubmitting}
 							dir={language === 'ar' ? 'rtl' : 'ltr'}
@@ -537,9 +572,9 @@ export default function FormSubmissionPage() {
 					<select
 						{...register(field.key)}
 						className={`w-full px-4 py-3 border rounded-lg shadow-sm focus:outline-none focus:ring-2 ${error
-							? 'border-red-500 focus:ring-red-500'
-							: 'border-gray-300 focus:border-indigo-500 focus:ring-indigo-500'
-							}`}
+ 								? 'border-red-500 focus:ring-red-500'
+ 								: 'border-gray-300 focus:border-indigo-500 focus:ring-indigo-500'
+ 							}`}
 						disabled={isSubmitting}
 						dir={language === 'ar' ? 'rtl' : 'ltr'}
 					>
@@ -705,9 +740,9 @@ export default function FormSubmissionPage() {
 						{...register(field.key)}
 						type='text'
 						className={`w-full px-4 py-3 border rounded-lg shadow-sm focus:outline-none focus:ring-2 ${error
-							? 'border-red-500 focus:ring-red-500'
-							: 'border-gray-300 focus:border-indigo-500 focus:ring-indigo-500'
-							}`}
+ 								? 'border-red-500 focus:ring-red-500'
+ 								: 'border-gray-300 focus:border-indigo-500 focus:ring-indigo-500'
+ 							}`}
 						placeholder={placeholder || ''}
 						disabled={isSubmitting}
 						dir={language === 'ar' ? 'rtl' : 'ltr'}
@@ -715,7 +750,9 @@ export default function FormSubmissionPage() {
 				);
 		}
 	};
+    
 
+    
 	if (isLoading) {
 		return (
 			<div className='min-h-screen bg-gray-50' dir={language === 'ar' ? 'rtl' : 'ltr'}>
@@ -797,255 +834,301 @@ export default function FormSubmissionPage() {
 			</header>
 
 			<main className='max-w-7xl mx-auto px-4 py-8 sm:px-6 lg:px-8'>
-				{!activeForm ? (
-					<div className='bg-white shadow rounded-lg p-8 text-center'>
-						<FiXCircle className='mx-auto h-12 w-12 text-gray-400 mb-4' />
-						<h3 className='text-lg font-medium text-gray-900 mb-2'>{t.form.noActiveForm}</h3>
-						<p className='text-gray-500'>{t.form.noActiveFormDesc}</p>
-					</div>
-				) : (
-					<div className='space-y-8'>
-						<div className='flex items-center justify-between mb-6 border-b border-gray-200'>
-							<nav className='-mb-px flex space-x-8'>
-								<button
-									onClick={() => setActiveTab('form')}
-									className={`cursor-pointer whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm flex items-center space-x-2 ${activeTab === 'form'
-										? 'border-indigo-500 text-indigo-600'
-										: 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-										}`}
-								>
-									<FiFileText className='h-4 w-4' />
-									<span>{t.form.submissionForm}</span>
-								</button>
+                
+                {/* Main Tabs */}
+                 <div className="flex border-b border-gray-200 mb-8 overflow-x-auto">
+                    <button
+                        onClick={() => setMainTab('project')}
+                        className={`whitespace-nowrap py-4 px-6 border-b-2 font-medium text-sm flex items-center space-x-2 transition-colors ${
+                            mainTab === 'project'
+                            ? 'border-indigo-500 text-indigo-600'
+                            : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                        }`}
+                    >
+                        <FiFileText className='h-4 w-4' />
+                        <span>{language === 'ar' ? 'نماذج المشاريع' : 'Project Forms'}</span>
+                    </button>
 
-								{submissions.length > 0 && (
-									<button
-										onClick={() => setActiveTab('submissions')}
-										className={`whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm flex items-center space-x-2 ${activeTab === 'submissions'
-											? 'border-indigo-500 text-indigo-600'
-											: 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-											}`}
-									>
-										<FiList className='h-4 w-4' />
-										<span>{t.form.mySubmission}</span>
-									</button>
-								)}
-							</nav>
+                     {/* Employee Requests Tab with Active Check */}
+                     {/* Employee Requests Tab with Active Check */}
+                     {/* Employee Requests Tab */}
+                    <button
+                            onClick={() => setMainTab('employee')}
+                            className={`whitespace-nowrap py-4 px-6 border-b-2 font-medium text-sm flex items-center space-x-2 transition-colors ${
+                                mainTab === 'employee'
+                                ? 'border-indigo-500 text-indigo-600'
+                                : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                            }`}
+                        >
+                            <FiUser className='h-4 w-4' />
+                            <span>{language === 'ar' ? 'طلبات الموظفين' : 'Employee Requests'}</span>
+                   </button>
+                 </div>
+                 
 
-							{/* Grid view toggle */}
-							<div className='flex items-center gap-2'>
-								<button
-									onClick={() => setGridView(1)}
-									title='One column view'
-									className={`bg-gray-200/60 group p-2 cursor-pointer rounded transition ${gridView === 1 ? 'bg-indigo-100 text-indigo-600' : 'hover:bg-gray-100 text-gray-500'
-										}`}
-								>
-									<div className='grid grid-cols-1 items-center justify-center gap-0.5 w-5 h-5'>
-										{[...Array(3)].map((_, i) => (
-											<span key={i} className='h-[5px] rounded bg-current'></span>
-										))}
-									</div>
-								</button>
-
-								<button
-									onClick={() => setGridView(2)}
-									title='Two columns view'
-									className={`bg-gray-200/60 group p-2 cursor-pointer rounded transition ${gridView === 2 ? 'bg-indigo-100 text-indigo-600' : 'hover:bg-gray-100 text-gray-500'
-										}`}
-								>
-									<div className='grid grid-cols-2 items-center justify-center gap-0.2 w-5 h-5'>
-										{[...Array(4)].map((_, i) => (
-											<span key={i} className='h-[8px] w-[8px] rounded bg-current'></span>
-										))}
-									</div>
-								</button>
-
-								<button
-									onClick={() => setGridView(3)}
-									title='Three columns view'
-									className={`bg-gray-200/60 group p-2 cursor-pointer rounded transition ${gridView === 3 ? 'bg-indigo-100 text-indigo-600' : 'hover:bg-gray-100 text-gray-500'
-										}`}
-								>
-									<div className='grid grid-cols-3 items-center justify-center gap-0.5 w-fit h-fit'>
-										{[...Array(6)].map((_, i) => (
-											<span key={i} className='h-[8px] w-[8px] rounded bg-current'></span>
-										))}
-									</div>
-								</button>
+                 {/* Main Content Area */}
+                 
+                 {/* 1. Project Forms Content - Always rendered but toggled via CSS to preserve state */}
+                  <div className={mainTab === 'project' ? 'block space-y-8' : 'hidden'}>
+						{!activeForm ? (
+							<div className='bg-white shadow rounded-lg p-8 text-center'>
+								<FiXCircle className='mx-auto h-12 w-12 text-gray-400 mb-4' />
+								<h3 className='text-lg font-medium text-gray-900 mb-2'>{t.form.noActiveForm}</h3>
+								<p className='text-gray-500'>{t.form.noActiveFormDesc}</p>
 							</div>
-						</div>
-
-						{/* FORM PANEL */}
-						{activeTab === 'form' && (
-							<div className='bg-white shadow overflow-hidden rounded-lg'>
-								<div className='px-6 py-5 border border-gray-200 bg-gray-100 overflow-hidden rounded-t-lg'>
-									<h2 className='text-lg font-semibold text-gray-900'>
-										{language === 'ar' && activeForm.title_ar ? activeForm.title_ar : activeForm.title}
-									</h2>
-									<p className='mt-1 text-sm text-gray-500'>
-										{language === 'ar' && activeForm.description_ar
-											? activeForm.description_ar
-											: activeForm.description || 'Please fill out the form below'}
-									</p>
-
-									{/* ✅ submission selector (shows only if user has 2+) */}
-									{submissions.length > 1 && (
-										<div className='mt-4 flex flex-col sm:flex-row sm:items-center gap-2'>
-											<span className='text-sm font-medium text-gray-700'>
-												{t.form.chooseSubmission}:
-											</span>
-											<select
-												value={selectedSubmissionId ?? ''}
-												onChange={e => handleChooseSubmission(e.target.value)}
-												className='w-full sm:w-auto px-3 py-2 border rounded-md bg-white text-sm'
-											>
-												{submissions.map(s => (
-													<option key={s.id} value={s.id}>
-														#{s.id} — {new Date(s.created_at).toLocaleString(language === 'ar' ? 'ar-SA' : 'en-US')}
-													</option>
-												))}
-											</select>
-
-											{selectedSubmission && (
-												<span className='text-xs text-gray-500'>
-													{language === 'ar' ? 'المختار' : 'Selected'}: #{selectedSubmission.id}
-												</span>
-											)}
-										</div>
-									)}
-								</div>
-
-								<form onSubmit={handleSubmit(onSubmit)} className='px-4 py-6'>
-									<motion.div
-										layout
-										className={`md:space-x-4 space-y-6 items-start grid transition-all duration-500 ${gridView === 1 ? 'grid-cols-1' : gridView === 2 ? 'md:grid-cols-2' : 'md:grid-cols-3'
-											}`}
-									>
-										{activeForm.fields?.map(field => (
-											<motion.div layout key={field.id} className='space-y-2' transition={{ duration: 0.3 }}>
-												<label className='block text-sm font-medium text-gray-700'>
-													{language === 'ar' && field.label_ar ? field.label_ar : field.label}
-													{field.required && <span className='text-red-500 ml-1'>{t.form.requiredField}</span>}
-												</label>
-
-												{renderFieldInput(field)}
-
-												{errors[field.key] && <p className='mt-1 text-sm text-red-600'>{errors[field.key].message}</p>}
-											</motion.div>
-										))}
-									</motion.div>
-
-									<div className='mt-8 flex justify-end'>
+						) : (
+							<div className='space-y-8'>
+								<div className='flex items-center justify-between mb-6 border-b border-gray-200'>
+									<nav className='-mb-px flex space-x-8'>
 										<button
-											type='submit'
-											disabled={isSubmitting || uploading}
-											className='cursor-pointer inline-flex justify-center py-3 px-6 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200'
+											onClick={() => setActiveTab('form')}
+											className={`cursor-pointer whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm flex items-center space-x-2 ${activeTab === 'form'
+													? 'border-indigo-500 text-indigo-600'
+													: 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+												}`}
 										>
-											{isSubmitting ? (
-												<>
-													<FaSpinner className='animate-spin -ml-1 mr-3 h-5 w-5' />
-													{t.form.processing}
-												</>
-											) : selectedSubmissionId || submissions.length > 0 ? (
-												t.form.update
-											) : (
-												t.form.submit
-											)}
+											<FiFileText className='h-4 w-4' />
+											<span>{t.form.submissionForm}</span>
+										</button>
+
+										{submissions.length > 0 && (
+											<button
+												onClick={() => setActiveTab('submissions')}
+												className={`whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm flex items-center space-x-2 ${activeTab === 'submissions'
+														? 'border-indigo-500 text-indigo-600'
+														: 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+													}`}
+											>
+												<FiList className='h-4 w-4' />
+												<span>{t.form.mySubmission}</span>
+											</button>
+										)}
+									</nav>
+
+									{/* Grid view toggle */}
+									<div className='flex items-center gap-2'>
+										<button
+											onClick={() => setGridView(1)}
+											title='One column view'
+											className={`bg-gray-200/60 group p-2 cursor-pointer rounded transition ${gridView === 1 ? 'bg-indigo-100 text-indigo-600' : 'hover:bg-gray-100 text-gray-500'
+												}`}
+										>
+											<div className='grid grid-cols-1 items-center justify-center gap-0.5 w-5 h-5'>
+												{[...Array(3)].map((_, i) => (
+													<span key={i} className='h-[5px] rounded bg-current'></span>
+												))}
+											</div>
+										</button>
+
+										<button
+											onClick={() => setGridView(2)}
+											title='Two columns view'
+											className={`bg-gray-200/60 group p-2 cursor-pointer rounded transition ${gridView === 2 ? 'bg-indigo-100 text-indigo-600' : 'hover:bg-gray-100 text-gray-500'
+												}`}
+										>
+											<div className='grid grid-cols-2 items-center justify-center gap-0.2 w-5 h-5'>
+												{[...Array(4)].map((_, i) => (
+													<span key={i} className='h-[8px] w-[8px] rounded bg-current'></span>
+												))}
+											</div>
+										</button>
+
+										<button
+											onClick={() => setGridView(3)}
+											title='Three columns view'
+											className={`bg-gray-200/60 group p-2 cursor-pointer rounded transition ${gridView === 3 ? 'bg-indigo-100 text-indigo-600' : 'hover:bg-gray-100 text-gray-500'
+												}`}
+										>
+											<div className='grid grid-cols-3 items-center justify-center gap-0.5 w-fit h-fit'>
+												{[...Array(6)].map((_, i) => (
+													<span key={i} className='h-[8px] w-[8px] rounded bg-current'></span>
+												))}
+											</div>
 										</button>
 									</div>
-								</form>
-							</div>
-						)}
-
-						{/* SUBMISSIONS PANEL */}
-						{activeTab === 'submissions' && submissions.length > 0 && (
-							<div className='bg-white shadow overflow-hidden rounded-lg'>
-								<div className='px-6 py-5 border border-gray-200 bg-gray-100 overflow-hidden rounded-t-lg'>
-									<h2 className='text-lg font-semibold text-gray-900'>{t.submissions.title}</h2>
-									<p className='mt-1 text-sm text-gray-500'>{t.submissions.desc}</p>
 								</div>
 
-								<div className='overflow-x-auto'>
-									<table className='min-w-full divide-y divide-gray-200'>
-										<thead className='bg-gray-50'>
-											<tr>
-												<th className='px-6 py-3 text-left rtl:!text-right text-xs font-medium text-gray-500 uppercase tracking-wider'>
-													{t.submissions.submissionDate}
-												</th>
-												<th className='px-6 py-3 text-left rtl:!text-right text-xs font-medium text-gray-500 uppercase tracking-wider'>
-													{t.submissions.status}
-												</th>
-												<th className='px-6 py-3 text-left rtl:!text-right text-xs font-medium text-gray-500 uppercase tracking-wider'>
-													{t.submissions.actions}
-												</th>
-											</tr>
-										</thead>
+								{/* FORM PANEL */}
+								{activeTab === 'form' && (
+									<div className='bg-white shadow overflow-hidden rounded-lg'>
+										<div className='px-6 py-5 border border-gray-200 bg-gray-100 overflow-hidden rounded-t-lg'>
+											<h2 className='text-lg font-semibold text-gray-900'>
+												{language === 'ar' && activeForm.title_ar ? activeForm.title_ar : activeForm.title}
+											</h2>
+											<p className='mt-1 text-sm text-gray-500'>
+												{language === 'ar' && activeForm.description_ar
+													? activeForm.description_ar
+													: activeForm.description || 'Please fill out the form below'}
+											</p>
 
-										<tbody className='bg-white divide-y divide-gray-200'>
-											{submissions.map(submission => (
-												<tr key={submission.id}>
-													<td className='px-6 py-4 whitespace-nowrap text-sm text-gray-500'>
-														{new Date(submission.created_at).toLocaleDateString(language === 'ar' ? 'ar-SA' : 'en-US', {
-															year: 'numeric',
-															month: 'short',
-															day: 'numeric',
-															hour: '2-digit',
-															minute: '2-digit',
-														})}
-													</td>
+											{/* submission selector */}
+											{submissions.length > 1 && (
+												<div className='mt-4 flex flex-col sm:flex-row sm:items-center gap-2'>
+													<span className='text-sm font-medium text-gray-700'>
+														{t.form.chooseSubmission}:
+													</span>
+													<select
+														value={selectedSubmissionId ?? ''}
+														onChange={e => handleChooseSubmission(e.target.value)}
+														className='w-full sm:w-auto px-3 py-2 border rounded-md bg-white text-sm'
+													>
+														{submissions.map(s => (
+															<option key={s.id} value={s.id}>
+																#{s.id} — {new Date(s.created_at).toLocaleString(language === 'ar' ? 'ar-SA' : 'en-US')}
+															</option>
+														))}
+													</select>
 
-													<td className='px-6 py-4 whitespace-nowrap'>
-														<span
-															className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-medium ${submission.isCheck ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'
-																}`}
-														>
-															{submission.isCheck ? (
-																<>
-																	<FiCheckCircle className='mr-1.5' />
-																	{t.submissions.verified}
-																</>
-															) : (
-																t.submissions.pending
-															)}
+													{selectedSubmission && (
+														<span className='text-xs text-gray-500'>
+															{language === 'ar' ? 'المختار' : 'Selected'}: #{selectedSubmission.id}
 														</span>
-													</td>
+													)}
+												</div>
+											)}
+										</div>
 
-													<td className='px-6 py-4 whitespace-nowrap text-sm font-medium'>
-														<div className='flex items-center space-x-3'>
-															<button
-																onClick={() => {
-																	setActiveTab('form');
-																	setSelectedSubmissionId(submission.id);
-																	localStorage.setItem(SELECTED_SUB_KEY, String(submission.id));
-																	applySubmissionToForm(submission, activeForm.fields, userAssets);
-																}}
-																className='text-indigo-600 hover:text-indigo-900 p-1.5 rounded-full hover:bg-indigo-50 transition-colors duration-200'
-																title={t.submissions.edit}
-															>
-																<FiEdit2 className='h-5 w-5' />
-															</button>
+										<form onSubmit={handleSubmit(onSubmit)} className='px-4 py-6'>
+											<motion.div
+												layout
+												className={`md:space-x-4 space-y-6 items-start grid transition-all duration-500 ${gridView === 1 ? 'grid-cols-1' : gridView === 2 ? 'md:grid-cols-2' : 'md:grid-cols-3'
+													}`}
+											>
+												{activeForm.fields?.map(field => (
+													<motion.div layout key={field.id} className='space-y-2' transition={{ duration: 0.3 }}>
+														<label className='block text-sm font-medium text-gray-700'>
+															{language === 'ar' && field.label_ar ? field.label_ar : field.label}
+															{field.required && <span className='text-red-500 ml-1'>{t.form.requiredField}</span>}
+														</label>
 
-															<button
-																onClick={() => handleDelete(submission.id)}
-																className='text-red-600 hover:text-red-900 p-1.5 rounded-full hover:bg-red-50 transition-colors duration-200'
-																title={t.submissions.delete}
-															>
-																<FiTrash2 className='h-5 w-5' />
-															</button>
-														</div>
-													</td>
-												</tr>
-											))}
-										</tbody>
-									</table>
-								</div>
+														{renderFieldInput(field)}
+
+														{errors[field.key] && <p className='mt-1 text-sm text-red-600'>{errors[field.key].message}</p>}
+													</motion.div>
+												))}
+											</motion.div>
+
+											<div className='mt-8 flex justify-end'>
+												<button
+													type='submit'
+													disabled={isSubmitting || uploading}
+													className='cursor-pointer inline-flex justify-center py-3 px-6 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200'
+												>
+													{isSubmitting ? (
+														<>
+															<FaSpinner className='animate-spin -ml-1 mr-3 h-5 w-5' />
+															{t.form.processing}
+														</>
+													) : selectedSubmissionId || submissions.length > 0 ? (
+														t.form.update
+													) : (
+														t.form.submit
+													)}
+												</button>
+											</div>
+										</form>
+									</div>
+								)}
+
+								{/* SUBMISSIONS PANEL */}
+								{activeTab === 'submissions' && submissions.length > 0 && (
+									<div className='bg-white shadow overflow-hidden rounded-lg'>
+										<div className='px-6 py-5 border border-gray-200 bg-gray-100 overflow-hidden rounded-t-lg'>
+											<h2 className='text-lg font-semibold text-gray-900'>{t.submissions.title}</h2>
+											<p className='mt-1 text-sm text-gray-500'>{t.submissions.desc}</p>
+										</div>
+
+										<div className='overflow-x-auto'>
+											<table className='min-w-full divide-y divide-gray-200'>
+												<thead className='bg-gray-50'>
+													<tr>
+														<th className='px-6 py-3 text-left rtl:!text-right text-xs font-medium text-gray-500 uppercase tracking-wider'>
+															{t.submissions.submissionDate}
+														</th>
+														<th className='px-6 py-3 text-left rtl:!text-right text-xs font-medium text-gray-500 uppercase tracking-wider'>
+															{t.submissions.status}
+														</th>
+														<th className='px-6 py-3 text-left rtl:!text-right text-xs font-medium text-gray-500 uppercase tracking-wider'>
+															{t.submissions.actions}
+														</th>
+													</tr>
+												</thead>
+
+												<tbody className='bg-white divide-y divide-gray-200'>
+													{submissions.map(submission => (
+														<tr key={submission.id}>
+															<td className='px-6 py-4 whitespace-nowrap text-sm text-gray-500'>
+																{new Date(submission.created_at).toLocaleDateString(language === 'ar' ? 'ar-SA' : 'en-US', {
+																	year: 'numeric',
+																	month: 'short',
+																	day: 'numeric',
+																	hour: '2-digit',
+																	minute: '2-digit',
+																})}
+															</td>
+
+															<td className='px-6 py-4 whitespace-nowrap'>
+																<span
+																	className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-medium ${submission.isCheck ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'
+																		}`}
+																>
+																	{submission.isCheck ? (
+																		<>
+																			<FiCheckCircle className='mr-1.5' />
+																			{t.submissions.verified}
+																		</>
+																	) : (
+																		t.submissions.pending
+																	)}
+																</span>
+															</td>
+
+															<td className='px-6 py-4 whitespace-nowrap text-sm font-medium'>
+																<div className='flex items-center space-x-3'>
+																	<button
+																		onClick={() => {
+																			setActiveTab('form');
+																			setSelectedSubmissionId(submission.id);
+																			localStorage.setItem(SELECTED_SUB_KEY, String(submission.id));
+																			applySubmissionToForm(submission, activeForm.fields, userAssets);
+																		}}
+																		className='text-indigo-600 hover:text-indigo-900 p-1.5 rounded-full hover:bg-indigo-50 transition-colors duration-200'
+																		title={t.submissions.edit}
+																	>
+																		<FiEdit2 className='h-5 w-5' />
+																	</button>
+
+																	<button
+																		onClick={() => handleDelete(submission.id)}
+																		className='text-red-600 hover:text-red-900 p-1.5 rounded-full hover:bg-red-50 transition-colors duration-200'
+																		title={t.submissions.delete}
+																	>
+																		<FiTrash2 className='h-5 w-5' />
+																	</button>
+																</div>
+															</td>
+														</tr>
+													))}
+												</tbody>
+											</table>
+										</div>
+									</div>
+								)}
 							</div>
 						)}
-					</div>
-				)}
+                   </div>
+                 
+                 {/* 2. Employee Requests Content - Rendered but toggled via CSS, internal fetching gated by isEmployeeActive */}
+                 <div className={mainTab === 'employee' ? 'block' : 'hidden'}>
+                    <EmployeeRequestsContent 
+                        user={user} 
+                        language={language} 
+                        translations={translations} 
+                    />
+                 </div>
+
 			</main>
 
-			{/* Asset Selection Modal */}
 			<Modal title={t.assets.selectFile} show={showAssetModal} onClose={() => setShowAssetModal(false)}>
 				<div className='space-y-6'>
 					<div>
