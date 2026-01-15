@@ -58,10 +58,19 @@ export default function EmployeeRequestsContent({ user, language, translations }
 
             try {
                 setCheckingStatus(true);
-                console.log(process.env.TOKENJWT_SECRET)
-                const res = await api.get(`${process.env.NEST_PUBLIC_BASE_URL_2}/employees/by-email/${user.name}`, {
+                
+                // Ensure we use an absolute URL so axios doesn't prepend the baseURL
+                let externalUrl = process.env.NEST_PUBLIC_BASE_URL_2 || '';
+                if (externalUrl && !externalUrl.startsWith('http')) {
+                    externalUrl = `https://${externalUrl}`;
+                }
+                
+                // Remove trailing slash if present to avoid double slash
+                const cleanBaseUrl = externalUrl.replace(/\/+$/, '');
+                
+                const res = await api.get(`${cleanBaseUrl}/employees/by-email/${user.name}`, {
                     headers: {
-                      Authorization: `Bearer ${process.env.TOKENJWT_SECRET}`
+                        Authorization: `Bearer ${process.env.TOKENJWT_SECRET}`
                     }
                 }); 
                 console.log('Employee status:', res.data);
