@@ -1,7 +1,7 @@
 const nextConfig = {
   // التكوينات الخاصة بـ Next.js
   env: {
-    NEST_PUBLIC_BASE_URL_2: `${process.env.NEST_PUBLIC_BASE_URL_2}`,
+    NEST_PUBLIC_BASE_URL_2: `${process.env.CRM_PUBLIC_URL}`,
     TOKENJWT_SECRET: `${process.env.TOKENJWT_SECRET}`,
   },
 };
