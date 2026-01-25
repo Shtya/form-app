@@ -978,9 +978,10 @@ export default function DashboardPage() {
 	useEffect(() => {
 		const fetchProjects = async () => {
 			try {
-				const res = await api.get(`${process.env.NEST_PUBLIC_BASE_URL_2}clients?limit=200`);
-				console.log(res.data.data)
-				setProjects(res.data.data); // ✅ نأخذ data فقط
+				const res = await fetch(`${process.env.NEST_PUBLIC_BASE_URL_2}clients?limit=200`);
+				const data = await res.json();
+				console.log(data.data)
+				setProjects(data.data); // ✅ نأخذ data فقط
 			} catch (error) {
 				console.error('Failed to fetch projects:', error);
 			}
