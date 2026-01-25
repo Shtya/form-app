@@ -985,16 +985,30 @@ export default function DashboardPage() {
 				// Remove trailing slash if present to avoid double slash
 				baseUrl = baseUrl.replace(/\/+$/, '');
 
-				const res = await fetch(`${baseUrl}/clients?limit=200`);
+				const res = await fetch(`${baseUrl}/clients?limit=2000`);
 				const data = await res.json();
 				console.log(data.data)
-				setProjects(data.data); // ✅ نأخذ data فقط
+				setProjects(data.data); // ✅ نأخذ data فقط 
 			} catch (error) {
 				console.error('Failed to fetch projects:', error);
 			}
 		};
 
 		fetchProjects();
+	}, []);
+
+
+	const [clients, setClients] = useState([]);
+	useEffect(() => {
+		const fetchClientsForFilter = async () => {
+			try {
+				const res = await api.get('/proj?limit=10000');
+				setClients(res.data?.data || res.data || []);
+			} catch (error) {
+				console.error('Failed to fetch clients for filter:', error);
+			}
+		};
+		fetchClientsForFilter();
 	}, []);
 
 	useEffect(() => {
@@ -2615,7 +2629,7 @@ export default function DashboardPage() {
 
 								<select value={selectedProjectId} onChange={e => setSelectedProjectId(e.target.value)} className='truncate !w-[150px] border border-gray-300 rounded-md px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500'>
 									<option value='all'>{t('allProjects')}</option>
-									{projects.map(e => {
+									{clients.map(e => {
 										return (
 											<option key={e.id} value={e.id}>
 												{e.clientName}
