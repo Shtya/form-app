@@ -1002,7 +1002,7 @@ export default function DashboardPage() {
 	useEffect(() => {
 		const fetchClientsForFilter = async () => {
 			try {
-				const res = await api.get('/proj?limit=10000');
+				const res = await api.get('/projects?limit=10000');
 				setClients(res.data?.data || res.data || []);
 			} catch (error) {
 				console.error('Failed to fetch clients for filter:', error);
