@@ -510,7 +510,7 @@ const userSchema = yup.object().shape({
 	// name: yup.string().required('Name is required'),
 	email: yup.string().required('National ID is required').matches(/^\d+$/, 'National ID must contain only digits').length(10, 'National ID must be exactly 10 digits long'),
 	projectId: yup.number().typeError('Project ID must be a number').required('Project ID is required'),
-
+	projectName: yup.string().optional(), // Added Project Name
 	password: yup.string().min(6, 'Password must be at least 6 characters').optional(),
 	role: yup.string().oneOf(['admin', 'user', 'supervisor'], 'Invalid role').required('Role is required'),
 	formId: yup
@@ -2882,6 +2882,14 @@ export default function DashboardPage() {
 								))}
 							</select>
 							{userErrors.projectId && <p className='mt-1 text-sm text-red-600'>{userErrors.projectId.message}</p>}
+						</div>
+
+						<div>
+							<label htmlFor='user-projectName' className='block text-sm font-medium text-gray-700'>
+								{t('projectName')} (Payroll)
+							</label>
+							<input type='text' id='user-projectName' className={`mt-1 block w-full border ${userErrors.projectName ? 'border-red-300' : 'border-gray-300'} rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500`} {...registerUser('projectName')} />
+							{userErrors.projectName && <p className='mt-1 text-sm text-red-600'>{userErrors.projectName.message}</p>}
 						</div>
 
 
