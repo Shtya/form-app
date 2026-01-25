@@ -2632,7 +2632,7 @@ export default function DashboardPage() {
 									{clients.map(e => {
 										return (
 											<option key={e.id} value={e.id}>
-												{e.clientName}
+												{e.name}
 											</option>
 										);
 									})}
