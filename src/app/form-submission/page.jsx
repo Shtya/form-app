@@ -799,8 +799,9 @@ export default function FormSubmissionPage() {
 		);
 	}
 
-	const selectedSubmission = submissions.find(s => s.id === selectedSubmissionId) || null;
 
+	console.log(submissions);
+	const selectedSubmission = submissions?.data?.find(s => s.id === selectedSubmissionId) || null;
 	return (
 		<div className='min-h-screen bg-gray-50' dir={language === 'ar' ? 'rtl' : 'ltr'}>
 			{/* Header */}
