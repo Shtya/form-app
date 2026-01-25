@@ -799,6 +799,8 @@ export default function FormSubmissionPage() {
 		);
 	}
 
+	console.log(submissions);
+	const selectedSubmission = submissions?.data?.find(s => s.id === selectedSubmissionId) || null;
 
 	console.log(submissions);
 	const selectedSubmission = submissions?.data?.find(s => s.id === selectedSubmissionId) || null;
