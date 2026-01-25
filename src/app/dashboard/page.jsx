@@ -978,7 +978,14 @@ export default function DashboardPage() {
 	useEffect(() => {
 		const fetchProjects = async () => {
 			try {
-				const res = await fetch(`${process.env.NEST_PUBLIC_BASE_URL_2}clients?limit=200`);
+				let baseUrl = process.env.NEST_PUBLIC_BASE_URL_2 || '';
+				if (baseUrl && !baseUrl.startsWith('http')) {
+					baseUrl = `https://${baseUrl}`;
+				}
+				// Remove trailing slash if present to avoid double slash
+				baseUrl = baseUrl.replace(/\/+$/, '');
+
+				const res = await fetch(`${baseUrl}/clients?limit=200`);
 				const data = await res.json();
 				console.log(data.data)
 				setProjects(data.data); // ✅ نأخذ data فقط
