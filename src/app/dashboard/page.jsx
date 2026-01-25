@@ -978,7 +978,8 @@ export default function DashboardPage() {
 	useEffect(() => {
 		const fetchProjects = async () => {
 			try {
-				const res = await api.get('/projects?limit=200');
+				const res = await api.get(`${process.env.NEST_PUBLIC_BASE_URL_2}clients?limit=200`);
+				console.log(res.data.data)
 				setProjects(res.data.data); // ✅ نأخذ data فقط
 			} catch (error) {
 				console.error('Failed to fetch projects:', error);
@@ -2602,7 +2603,7 @@ export default function DashboardPage() {
 									{projects.map(e => {
 										return (
 											<option key={e.id} value={e.id}>
-												{e.name}
+												{e.clientName}
 											</option>
 										);
 									})}
@@ -2868,7 +2869,7 @@ export default function DashboardPage() {
 								<option value=''>-- {t('select_project')} --</option>
 								{projects.map(project => (
 									<option key={project.id} value={project.id}>
-										{project.name}
+										{project.clientName}
 									</option>
 								))}
 							</select>
@@ -2973,7 +2974,7 @@ export default function DashboardPage() {
 								<option value=''>-- {t('select_project')} --</option>
 								{projects.map(project => (
 									<option key={project.id} value={project.id}>
-										{project.name}
+										{project.clientName}
 									</option>
 								))}
 							</select>
