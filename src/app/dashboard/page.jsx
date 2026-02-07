@@ -1,3 +1,4 @@
+
 'use client';
 import { useEffect, useState, useRef } from 'react';
 import { useAuth } from '../../context/AuthContext';
@@ -248,22 +249,22 @@ const translations = {
 		form_required: 'Form is required',
 		no_forms_available: 'No forms available',
 
-        type: 'Form Type',
-        project_type: 'Project Form',
-        employee_request_type: 'Employee Request Form',
-        approvalFlow: 'Approval Flow',
-        none: 'None (Direct)',
-        hr_only: 'HR Only',
-        supervisor_only: 'Supervisor Only',
-        hr_then_supervisor: 'HR then Supervisor',
-        supervisor_then_hr: 'Supervisor then HR',
-        employeeRequests: 'Employee Requests',
-        pending_hr: 'Pending HR',
-        pending_supervisor: 'Pending Supervisor',
-        approved: 'Approved',
-        rejected: 'Rejected',
-        approve: 'Approve',
-        reject: 'Reject',
+		type: 'Form Type',
+		project_type: 'Project Form',
+		employee_request_type: 'Employee Request Form',
+		approvalFlow: 'Approval Flow',
+		none: 'None (Direct)',
+		hr_only: 'HR Only',
+		supervisor_only: 'Supervisor Only',
+		hr_then_supervisor: 'HR then Supervisor',
+		supervisor_then_hr: 'Supervisor then HR',
+		employeeRequests: 'Employee Requests',
+		pending_hr: 'Pending HR',
+		pending_supervisor: 'Pending Supervisor',
+		approved: 'Approved',
+		rejected: 'Rejected',
+		approve: 'Approve',
+		reject: 'Reject',
 	},
 	ar: {
 		"confirmDeleteTitle": "تأكيد الحذف",
@@ -487,22 +488,22 @@ const translations = {
 		form_required: 'النموذج مطلوب',
 		no_forms_available: 'لا توجد نماذج متاحة',
 
-        type: 'نوع النموذج',
-        project_type: 'نموذج مشروع',
-        employee_request_type: 'نموذج طلب موظف',
-        approvalFlow: 'مسار الاعتماد',
-        none: 'بدون (مباشر)',
-        hr_only: 'الموارد البشرية فقط',
-        supervisor_only: 'المشرف المباشر فقط',
-        hr_then_supervisor: 'الموارد البشرية ثم المشرف',
-        supervisor_then_hr: 'المشرف ثم الموارد البشرية',
-        employeeRequests: 'طلبات الموظفين',
-        pending_hr: 'بانتظار الموارد البشرية',
-        pending_supervisor: 'بانتظار المشرف',
-        approved: 'مقبول',
-        rejected: 'مرفوض',
-        approve: 'موافقة',
-        reject: 'رفض',
+		type: 'نوع النموذج',
+		project_type: 'نموذج مشروع',
+		employee_request_type: 'نموذج طلب موظف',
+		approvalFlow: 'مسار الاعتماد',
+		none: 'بدون (مباشر)',
+		hr_only: 'الموارد البشرية فقط',
+		supervisor_only: 'المشرف المباشر فقط',
+		hr_then_supervisor: 'الموارد البشرية ثم المشرف',
+		supervisor_then_hr: 'المشرف ثم الموارد البشرية',
+		employeeRequests: 'طلبات الموظفين',
+		pending_hr: 'بانتظار الموارد البشرية',
+		pending_supervisor: 'بانتظار المشرف',
+		approved: 'مقبول',
+		rejected: 'مرفوض',
+		approve: 'موافقة',
+		reject: 'رفض',
 	},
 };
 
@@ -527,8 +528,8 @@ const userSchema = yup.object().shape({
 const formSchema = yup.object().shape({
 	title: yup.string().required('Title is required'),
 	description: yup.string(),
-    type: yup.string().oneOf(['project', 'employee_request']).default('project'),
-    approvalFlow: yup.string().nullable().oneOf(['none', 'hr_only', 'supervisor_only', 'hr_then_supervisor', 'supervisor_then_hr']).default('none'),
+	type: yup.string().oneOf(['project', 'employee_request']).default('project'),
+	approvalFlow: yup.string().nullable().oneOf(['none', 'hr_only', 'supervisor_only', 'hr_then_supervisor', 'supervisor_then_hr']).default('none'),
 });
 
 const fieldSchema = yup.object().shape({
@@ -894,7 +895,7 @@ export default function DashboardPage() {
 		}
 	});
 
-    const formType = watchForm('type');
+	const formType = watchForm('type');
 
 	const {
 		register: registerField,
@@ -914,9 +915,9 @@ export default function DashboardPage() {
 		if (savedTab) setActiveTab(savedTab);
 	}, []);
 
-    useEffect(() => {
-        localStorage.setItem('adminActiveTab', activeTab);
-    }, [activeTab]);
+	useEffect(() => {
+		localStorage.setItem('adminActiveTab', activeTab);
+	}, [activeTab]);
 
 	useEffect(() => {
 		if (!authLoading && user?.role === 'admin') {
@@ -1098,8 +1099,8 @@ export default function DashboardPage() {
 			const response = await api.post('/forms', {
 				title: formData.title,
 				description: formData.description,
-                type: formData.type || 'project',
-                approvalFlow: formData.approvalFlow || 'none',
+				type: formData.type || 'project',
+				approvalFlow: formData.approvalFlow || 'none',
 				fields: [],
 			});
 			setForms([response.data, ...forms]);
@@ -1177,7 +1178,7 @@ export default function DashboardPage() {
 				...userData,
 				projectName: selectedProject ? selectedProject.clientName : undefined
 			};
-			
+
 			const response = await api.post('/auth/create-user', payload);
 			setUsers([response.data, ...users]);
 			setShowNewUserModal(false);
@@ -1744,10 +1745,6 @@ export default function DashboardPage() {
 
 	const isImageUrlByExt = (url = '') => IMG_EXTS.includes(getUrlExt(url));
 
-	// لو ما فيش امتداد خالص
-	const hasNoExt = (url = '') => getUrlExt(url) === '';
-
-
 	const renderSubmissionTable = () => {
 		const requestDeleteSubmission = (submissionId) => {
 			setDeletePopup({ open: true, submissionId });
@@ -2146,145 +2143,297 @@ export default function DashboardPage() {
 
 	return (
 		<div className='min-h-screen bg-gradient-to-br from-gray-50 to-gray-100' dir={language === 'ar' ? 'rtl' : 'ltr'}>
-			<header className='bg-white shadow-sm sticky top-0 z-40'>
-				<div className='max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex items-center justify-between'>
-					<div className='flex items-center'>
-						<div className='flex flex-col items-start gap-0 leading-tight'>
-							<h1 className='text-2xl font-bold text-gray-800'>{t('dashboard')}</h1>
-							<div className='text-xs text-gray-600 flex items-center gap-1'>
-								{t('welcome')},<span className='text-sm font-semibold text-indigo-600  font-[inter] ' >{user?.name}</span>
+			{/* Premium Header Design */}
+			<header className='bg-gradient-to-r from-white to-gray-50 shadow-lg sticky top-0 z-40 border-b-2 border-gray-200'>
+				<div className='max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-5'>
+					<div className='flex items-center justify-between'>
+						{/* Left Section - Enhanced */}
+						<div className='flex items-center gap-4'>
+							<div className='hidden sm:flex items-center justify-center w-14 h-14 rounded-2xl bg-gradient-to-br from-indigo-500 via-indigo-600 to-indigo-700 shadow-xl shadow-indigo-200'>
+								<svg className='w-7 h-7 text-white' fill='none' stroke='currentColor' viewBox='0 0 24 24'>
+									<path strokeLinecap='round' strokeLinejoin='round' strokeWidth={2} d='M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z' />
+								</svg>
+							</div>
+							<div className='flex flex-col leading-tight'>
+								<h1 className='text-md font-bold bg-gradient-to-r from-gray-900 to-gray-700 bg-clip-text text-transparent'>
+									{t('dashboard')}
+								</h1>
+								<div className='flex items-center gap-2 text-sm mt-1'>
+									<span className='text-gray-600'>{t('welcome')},</span>
+									<div className='flex items-center gap-1.5 px-2.5 py-1 bg-indigo-100 rounded-lg border border-indigo-200'>
+										<div className='w-2 h-2 rounded-full bg-indigo-600 animate-pulse'></div>
+										<span className='font-bold text-indigo-700 font-[Inter]'>{user?.name}</span>
+									</div>
+								</div>
 							</div>
 						</div>
-					</div>
 
-					<div className='flex items-center gap-2'>
-						<LanguageToggle IsFixed={false} onToggle={toggleLanguage} currentLang={language} languages={translations} />
-						<LogoutButton IsFixed={false} onClick={logout} label={t('logout')} position={{ top: '1rem', right: '5rem' }} className=' h-12 z-50' showText={false} />
-						<button className='  md:hidden rtl:ml-4 ltr:mr-4 text-gray-500 hover:text-gray-700' onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}>
-							<svg className='cursor-pointer w-6 h-6' fill='none' stroke='currentColor' viewBox='0 0 24 24' xmlns='http://www.w3.org/2000/svg'>
-								<path strokeLinecap='round' strokeLinejoin='round' strokeWidth={2} d='M4 6h16M4 12h16M4 18h16' />
-							</svg>
-						</button>
+						{/* Right Section - Enhanced */}
+						<div className='flex items-center gap-3'>
+							<LanguageToggle
+								IsFixed={false}
+								onToggle={toggleLanguage}
+								currentLang={language}
+								languages={translations}
+							/>
+
+							<LogoutButton
+								IsFixed={false}
+								onClick={logout}
+								label={t('logout')}
+								position={{ top: '1rem', right: '5rem' }}
+								className='h-12 z-50'
+								showText={false}
+							/>
+
+							{/* Enhanced Mobile Menu Button */}
+							<button
+								className='md:hidden p-3 text-gray-600 hover:text-white bg-white hover:bg-gradient-to-r hover:from-indigo-600 hover:to-indigo-500 border-2 border-gray-200 hover:border-indigo-600 rounded-xl transition-all duration-200 shadow-sm hover:shadow-md active:scale-95'
+								onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+								aria-label="Toggle menu"
+							>
+								{isMobileMenuOpen ? (
+									<svg className='w-5 h-5' fill='none' stroke='currentColor' viewBox='0 0 24 24'>
+										<path strokeLinecap='round' strokeLinejoin='round' strokeWidth={2.5} d='M6 18L18 6M6 6l12 12' />
+									</svg>
+								) : (
+									<svg className='w-5 h-5' fill='none' stroke='currentColor' viewBox='0 0 24 24'>
+										<path strokeLinecap='round' strokeLinejoin='round' strokeWidth={2.5} d='M4 6h16M4 12h16M4 18h16' />
+									</svg>
+								)}
+							</button>
+						</div>
 					</div>
 				</div>
 			</header>
 
-			{/* Mobile menu */}
+			{/* Premium Mobile Menu */}
 			{isMobileMenuOpen && (
-				<div className='md:hidden  bg-white shadow-md'>
-					<div className='px-2 pt-2 pb-3 space-y-1 sm:px-3'>
-						<button
-							onClick={() => {
-								setActiveTab('forms');
-								setIsMobileMenuOpen(false);
-							}}
-							className={`block px-3 py-2 rounded-md text-base font-medium w-full text-left ${activeTab === 'forms' ? 'bg-indigo-50 text-indigo-700' : 'text-gray-700 hover:text-indigo-600 hover:bg-gray-50'}`}>
-							{t('formsManagement')}
-						</button>
-						<button
-							onClick={() => {
-								setActiveTab('submissions');
-								setIsMobileMenuOpen(false);
-							}}
-							className={`block px-3 py-2 rounded-md text-base font-medium w-full text-left ${activeTab === 'submissions' ? 'bg-indigo-50 text-indigo-700' : 'text-gray-700 hover:text-indigo-600 hover:bg-gray-50'}`}>
-							{t('submissions')}
-						</button>
-						<button
-							onClick={() => {
-								setActiveTab('users');
-								setIsMobileMenuOpen(false);
-							}}
-							className={`block px-3 py-2 rounded-md text-base font-medium w-full text-left ${activeTab === 'users' ? 'bg-indigo-50 text-indigo-700' : 'text-gray-700 hover:text-indigo-600 hover:bg-gray-50'}`}>
-							{t('users')}
-						</button>
-						<button
-							onClick={() => {
-								setActiveTab('projects');
-								setIsMobileMenuOpen(false);
-							}}
-							className={`block px-3 py-2 rounded-md text-base font-medium w-full text-left ${activeTab === 'projects' ? 'bg-indigo-50 text-indigo-700' : 'text-gray-700 hover:text-indigo-600 hover:bg-gray-50'}`}>
-							{t('projects')}
-						</button>
-						<button
-							onClick={() => {
-								setActiveTab('templates');
-								setIsMobileMenuOpen(false);
-							}}
-							className={`block px-3 py-2 rounded-md text-base font-medium w-full text-left ${activeTab === 'templates' ? 'bg-indigo-50 text-indigo-700' : 'text-gray-700 hover:text-indigo-600 hover:bg-gray-50'}`}>
-							{t('templates') || 'Templates'}
-						</button>
-						<button
-							onClick={() => {
-								setActiveTab('employeeRequests');
-								setIsMobileMenuOpen(false);
-							}}
-							className={`block px-3 py-2 rounded-md text-base font-medium w-full text-left ${activeTab === 'employeeRequests' ? 'bg-indigo-50 text-indigo-700' : 'text-gray-700 hover:text-indigo-600 hover:bg-gray-50'}`}>
-							{t('employeeRequests')}
-						</button>
+				<>
+					{/* Backdrop */}
+					<div
+						className='md:hidden fixed inset-0 bg-black/20 backdrop-blur-sm z-30 animate-fadeIn'
+						onClick={() => setIsMobileMenuOpen(false)}
+					/>
+
+					{/* Menu Panel */}
+					<div className='md:hidden fixed top-[98px] left-0 right-0 bg-white shadow-2xl border-b-2 border-gray-200 z-40 animate-slideDown'>
+						<div className='px-4 py-4 space-y-2 max-h-[calc(100vh-72px)] overflow-y-auto'>
+							<button
+								onClick={() => {
+									setActiveTab('forms');
+									setIsMobileMenuOpen(false);
+								}}
+								className={`group relative flex items-center gap-3 w-full px-4 py-3.5 rounded-xl text-sm font-bold transition-all duration-200 overflow-hidden ${activeTab === 'forms'
+									? 'bg-gradient-to-r from-indigo-600 to-indigo-500 text-white shadow-lg shadow-indigo-200'
+									: 'text-gray-700 hover:bg-gradient-to-r hover:from-indigo-50 hover:to-indigo-100/50 hover:text-indigo-700 border-2 border-transparent hover:border-indigo-200'
+									}`}
+							>
+								<div className={`p-1.5 rounded-lg ${activeTab === 'forms' ? 'bg-white/20' : 'bg-indigo-100'}`}>
+									<FiFileText className={`h-4 w-4 ${activeTab === 'forms' ? 'text-white' : 'text-indigo-600 group-hover:scale-110 transition-transform'}`} />
+								</div>
+								<span>{t('formsManagement')}</span>
+								{activeTab === 'forms' && (
+									<div className='absolute right-3 w-2 h-2 rounded-full bg-white animate-pulse'></div>
+								)}
+							</button>
+
+							<button
+								onClick={() => {
+									setActiveTab('submissions');
+									setIsMobileMenuOpen(false);
+								}}
+								className={`group relative flex items-center gap-3 w-full px-4 py-3.5 rounded-xl text-sm font-bold transition-all duration-200 overflow-hidden ${activeTab === 'submissions'
+									? 'bg-gradient-to-r from-indigo-600 to-indigo-500 text-white shadow-lg shadow-indigo-200'
+									: 'text-gray-700 hover:bg-gradient-to-r hover:from-indigo-50 hover:to-indigo-100/50 hover:text-indigo-700 border-2 border-transparent hover:border-indigo-200'
+									}`}
+							>
+								<div className={`p-1.5 rounded-lg ${activeTab === 'submissions' ? 'bg-white/20' : 'bg-indigo-100'}`}>
+									<FiList className={`h-4 w-4 ${activeTab === 'submissions' ? 'text-white' : 'text-indigo-600 group-hover:scale-110 transition-transform'}`} />
+								</div>
+								<span>{t('submissions')}</span>
+								{activeTab === 'submissions' && (
+									<div className='absolute right-3 w-2 h-2 rounded-full bg-white animate-pulse'></div>
+								)}
+							</button>
+
+							<button
+								onClick={() => {
+									setActiveTab('users');
+									setIsMobileMenuOpen(false);
+								}}
+								className={`group relative flex items-center gap-3 w-full px-4 py-3.5 rounded-xl text-sm font-bold transition-all duration-200 overflow-hidden ${activeTab === 'users'
+									? 'bg-gradient-to-r from-indigo-600 to-indigo-500 text-white shadow-lg shadow-indigo-200'
+									: 'text-gray-700 hover:bg-gradient-to-r hover:from-indigo-50 hover:to-indigo-100/50 hover:text-indigo-700 border-2 border-transparent hover:border-indigo-200'
+									}`}
+							>
+								<div className={`p-1.5 rounded-lg ${activeTab === 'users' ? 'bg-white/20' : 'bg-indigo-100'}`}>
+									<FiUser className={`h-4 w-4 ${activeTab === 'users' ? 'text-white' : 'text-indigo-600 group-hover:scale-110 transition-transform'}`} />
+								</div>
+								<span>{t('users')}</span>
+								{activeTab === 'users' && (
+									<div className='absolute right-3 w-2 h-2 rounded-full bg-white animate-pulse'></div>
+								)}
+							</button>
+
+							<button
+								onClick={() => {
+									setActiveTab('projects');
+									setIsMobileMenuOpen(false);
+								}}
+								className={`group relative flex items-center gap-3 w-full px-4 py-3.5 rounded-xl text-sm font-bold transition-all duration-200 overflow-hidden ${activeTab === 'projects'
+									? 'bg-gradient-to-r from-indigo-600 to-indigo-500 text-white shadow-lg shadow-indigo-200'
+									: 'text-gray-700 hover:bg-gradient-to-r hover:from-indigo-50 hover:to-indigo-100/50 hover:text-indigo-700 border-2 border-transparent hover:border-indigo-200'
+									}`}
+							>
+								<div className={`p-1.5 rounded-lg ${activeTab === 'projects' ? 'bg-white/20' : 'bg-indigo-100'}`}>
+									<FiUser className={`h-4 w-4 ${activeTab === 'projects' ? 'text-white' : 'text-indigo-600 group-hover:scale-110 transition-transform'}`} />
+								</div>
+								<span>{t('projects')}</span>
+								{activeTab === 'projects' && (
+									<div className='absolute right-3 w-2 h-2 rounded-full bg-white animate-pulse'></div>
+								)}
+							</button> 
+
+							<button
+								onClick={() => {
+									setActiveTab('employeeRequests');
+									setIsMobileMenuOpen(false);
+								}}
+								className={`group relative flex items-center gap-3 w-full px-4 py-3.5 rounded-xl text-sm font-bold transition-all duration-200 overflow-hidden ${activeTab === 'employeeRequests'
+									? 'bg-gradient-to-r from-indigo-600 to-indigo-500 text-white shadow-lg shadow-indigo-200'
+									: 'text-gray-700 hover:bg-gradient-to-r hover:from-indigo-50 hover:to-indigo-100/50 hover:text-indigo-700 border-2 border-transparent hover:border-indigo-200'
+									}`}
+							>
+								<div className={`p-1.5 rounded-lg ${activeTab === 'employeeRequests' ? 'bg-white/20' : 'bg-indigo-100'}`}>
+									<FiList className={`h-4 w-4 ${activeTab === 'employeeRequests' ? 'text-white' : 'text-indigo-600 group-hover:scale-110 transition-transform'}`} />
+								</div>
+								<span>{t('employeeRequests')}</span>
+								{activeTab === 'employeeRequests' && (
+									<div className='absolute right-3 w-2 h-2 rounded-full bg-white animate-pulse'></div>
+								)}
+							</button>
+						</div>
 					</div>
-				</div>
+				</>
 			)}
 
 			<main className='max-w-7xl mx-auto py-6 sm:px-6 lg:px-8'>
 				{/* Desktop tabs - hidden on mobile */}
-				<div className='hidden md:flex items-center justify-between mb-6 border-b border-gray-200'>
-					<nav className='-mb-px flex space-x-8'>
-						<button onClick={() => setActiveTab('forms')} className={`whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm flex items-center space-x-2 ${activeTab === 'forms' ? 'border-indigo-500 text-indigo-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'} cursor-pointer`}>
-							<FiFileText className='h-4 w-4' />
+				<div className='hidden md:flex items-center justify-between mb-8'>
+					<nav className='flex gap-2 p-1.5 bg-gray-100 rounded-xl border-2 border-gray-200 shadow-inner'>
+						<button
+							onClick={() => setActiveTab('forms')}
+							className={`group relative flex items-center gap-2.5 px-5 py-3 rounded-lg font-semibold text-sm transition-all duration-200 cursor-pointer ${activeTab === 'forms'
+								? 'bg-white text-indigo-700 shadow-md'
+								: 'text-gray-600 hover:text-gray-900 hover:bg-white/50'
+								}`}
+						>
+							<FiFileText className={`h-4 w-4 transition-transform ${activeTab === 'forms' ? 'scale-110' : 'group-hover:scale-110'}`} />
 							<span>{t('formsManagement')}</span>
+							{activeTab === 'forms' && (
+								<div className='absolute bottom-0 left-1/2 -translate-x-1/2 w-12 h-1 bg-indigo-600 rounded-t-full' />
+							)}
 						</button>
-						<button onClick={() => setActiveTab('submissions')} className={`whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm flex items-center space-x-2 ${activeTab === 'submissions' ? 'border-indigo-500 text-indigo-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'} cursor-pointer`}>
-							<FiList className='h-4 w-4' />
+
+						<button
+							onClick={() => setActiveTab('submissions')}
+							className={`group relative flex items-center gap-2.5 px-5 py-3 rounded-lg font-semibold text-sm transition-all duration-200 cursor-pointer ${activeTab === 'submissions'
+								? 'bg-white text-indigo-700 shadow-md'
+								: 'text-gray-600 hover:text-gray-900 hover:bg-white/50'
+								}`}
+						>
+							<FiList className={`h-4 w-4 transition-transform ${activeTab === 'submissions' ? 'scale-110' : 'group-hover:scale-110'}`} />
 							<span>{t('submissions')}</span>
+							{activeTab === 'submissions' && (
+								<div className='absolute bottom-0 left-1/2 -translate-x-1/2 w-12 h-1 bg-indigo-600 rounded-t-full' />
+							)}
 						</button>
-						<button onClick={() => setActiveTab('users')} className={`whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm flex items-center space-x-2 ${activeTab === 'users' ? 'border-indigo-500 text-indigo-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'} cursor-pointer`}>
-							<FiUser className='h-4 w-4' />
+
+						<button
+							onClick={() => setActiveTab('users')}
+							className={`group relative flex items-center gap-2.5 px-5 py-3 rounded-lg font-semibold text-sm transition-all duration-200 cursor-pointer ${activeTab === 'users'
+								? 'bg-white text-indigo-700 shadow-md'
+								: 'text-gray-600 hover:text-gray-900 hover:bg-white/50'
+								}`}
+						>
+							<FiUser className={`h-4 w-4 transition-transform ${activeTab === 'users' ? 'scale-110' : 'group-hover:scale-110'}`} />
 							<span>{t('users')}</span>
+							{activeTab === 'users' && (
+								<div className='absolute bottom-0 left-1/2 -translate-x-1/2 w-12 h-1 bg-indigo-600 rounded-t-full' />
+							)}
 						</button>
-						<button onClick={() => setActiveTab('projects')} className={`whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm flex items-center space-x-2 ${activeTab === 'projects' ? 'border-indigo-500 text-indigo-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'} cursor-pointer`}>
-							<FiUser className='h-4 w-4' />
+
+						<button
+							onClick={() => setActiveTab('projects')}
+							className={`group relative flex items-center gap-2.5 px-5 py-3 rounded-lg font-semibold text-sm transition-all duration-200 cursor-pointer ${activeTab === 'projects'
+								? 'bg-white text-indigo-700 shadow-md'
+								: 'text-gray-600 hover:text-gray-900 hover:bg-white/50'
+								}`}
+						>
+							<FiUser className={`h-4 w-4 transition-transform ${activeTab === 'projects' ? 'scale-110' : 'group-hover:scale-110'}`} />
 							<span>{t('projects')}</span>
+							{activeTab === 'projects' && (
+								<div className='absolute bottom-0 left-1/2 -translate-x-1/2 w-12 h-1 bg-indigo-600 rounded-t-full' />
+							)}
 						</button>
-						<button onClick={() => setActiveTab('employeeRequests')} className={`whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm flex items-center space-x-2 ${activeTab === 'employeeRequests' ? 'border-indigo-500 text-indigo-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'} cursor-pointer`}>
-							<FiList className='h-4 w-4' />
+
+						<button
+							onClick={() => setActiveTab('employeeRequests')}
+							className={`group relative flex items-center gap-2.5 px-5 py-3 rounded-lg font-semibold text-sm transition-all duration-200 cursor-pointer ${activeTab === 'employeeRequests'
+								? 'bg-white text-indigo-700 shadow-md'
+								: 'text-gray-600 hover:text-gray-900 hover:bg-white/50'
+								}`}
+						>
+							<FiList className={`h-4 w-4 transition-transform ${activeTab === 'employeeRequests' ? 'scale-110' : 'group-hover:scale-110'}`} />
 							<span>{t('employeeRequests')}</span>
+							{activeTab === 'employeeRequests' && (
+								<div className='absolute bottom-0 left-1/2 -translate-x-1/2 w-12 h-1 bg-indigo-600 rounded-t-full' />
+							)}
 						</button>
-						{/* <button onClick={() => setActiveTab('templates')} className={`whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm flex items-center space-x-2 ${activeTab === 'templates' ? 'border-indigo-500 text-indigo-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'} cursor-pointer`}>
-							<FiDownload className='h-4 w-4' />
-							<span>{t('templates') || 'Templates'}</span>
-						</button> */}
 					</nav>
 				</div>
 
 				{activeTab === 'forms' && (
 					<div className='grid grid-cols-1 lg:grid-cols-[1fr_500px] gap-6'>
-						<div className='sticky top-[100px] h-fit bg-white rounded-xl shadow-sm overflow-hidden border border-gray-100 transition-all hover:shadow-md'>
-							<div className='p-6 border-b border-gray-100 flex justify-between items-center bg-gradient-to-r from-gray-50 to-white'>
-								<div>
-									<h2 className='text-xl font-bold text-gray-800 flex items-center gap-2'>
-										<FiFileText className='text-indigo-500' />
-										{t('yourForms')}
-									</h2>
-									<p className='text-sm text-gray-500 mt-1'>{t('createManageForms')}</p>
+						{/* Forms List Section */}
+						<div className='sticky top-[100px] h-fit bg-gradient-to-br from-white to-gray-50/50 rounded-2xl shadow-lg overflow-hidden border-2 border-gray-200 transition-all hover:shadow-xl'>
+							{/* Header */}
+							<div className='bg-gradient-to-r from-indigo-600 to-indigo-500 p-6'>
+								<div className='flex justify-between items-center'>
+									<div className='flex items-center gap-3'>
+										<div className='p-2.5 bg-white/20 rounded-xl backdrop-blur-sm'>
+											<FiFileText className='text-white w-6 h-6' />
+										</div>
+										<div>
+											<h2 className='text-2xl font-bold text-white'>{t('yourForms')}</h2>
+											<p className='text-sm text-indigo-100 mt-0.5'>{t('createManageForms')}</p>
+										</div>
+									</div>
+									<button
+										onClick={() => setShowNewFormModal(true)}
+										className='group flex items-center gap-2 bg-white text-indigo-600 px-4 py-2.5 rounded-xl text-sm font-semibold shadow-md hover:shadow-lg transition-all cursor-pointer active:scale-95'
+									>
+										<FiPlus className='h-4 w-4 group-hover:rotate-90 transition-transform' />
+										<span>{t('newForm')}</span>
+									</button>
 								</div>
-								<button onClick={() => setShowNewFormModal(true)} className='flex items-center space-x-2 bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg text-sm transition-all cursor-pointer shadow-sm hover:shadow-md active:scale-95'>
-									<FiPlus className='h-4 w-4' />
-									<span>{t('newForm')}</span>
-								</button>
 							</div>
 
-							<div className='p-5 space-y-3'>
+							{/* Forms List */}
+							<div className='p-6 space-y-3 max-h-[700px] overflow-y-auto scrollbar-custom'>
 								{isLoading.forms ? (
 									<div className='space-y-4'>
 										{[...Array(3)].map((_, i) => (
-											<div key={i} className='p-4 rounded-lg border border-gray-200 bg-white'>
-												<div className='animate-pulse flex space-x-4'>
+											<div key={i} className='p-5 rounded-xl border-2 border-gray-200 bg-white'>
+												<div className='animate-pulse flex gap-4'>
+													<div className='flex-shrink-0 w-12 h-12 bg-gray-200 rounded-xl'></div>
 													<div className='flex-1 space-y-3'>
-														<div className='h-4 bg-gray-200 rounded w-3/4'></div>
-														<div className='h-3 bg-gray-200 rounded w-1/2'></div>
+														<div className='h-4 bg-gray-200 rounded-lg w-3/4'></div>
+														<div className='h-3 bg-gray-200 rounded-lg w-1/2'></div>
 														<div className='flex justify-between pt-2'>
-															<div className='h-4 bg-gray-200 rounded w-16'></div>
-															<div className='h-4 bg-gray-200 rounded w-20'></div>
+															<div className='h-4 bg-gray-200 rounded-lg w-16'></div>
+															<div className='h-4 bg-gray-200 rounded-lg w-20'></div>
 														</div>
 													</div>
 												</div>
@@ -2293,144 +2442,177 @@ export default function DashboardPage() {
 									</div>
 								) : forms.length > 0 ? (
 									forms.map(form => (
-										<div key={form.id} className={`relative p-5 rounded-xl cursor-pointer transition-all duration-200 group overflow-hidden ${selectedForm?.id === form.id ? 'ring-2 ring-indigo-400 bg-indigo-50 shadow-sm' : 'bg-white hover:bg-gray-50 border border-gray-200 hover:border-gray-300'} ${form.isActive ? 'before:absolute before:inset-y-0 before:left-0 before:w-1 before:bg-green-400' : ''} `} onClick={() => setSelectedForm(form)}>
+										<div
+											key={form.id}
+											className={`relative p-5 rounded-xl cursor-pointer transition-all duration-200 group overflow-hidden ${selectedForm?.id === form.id
+												? 'ring-2 ring-indigo-500 bg-gradient-to-br from-indigo-50 to-indigo-100/50 shadow-lg border-2 border-indigo-300'
+												: 'bg-white hover:bg-gray-50 border-2 border-gray-200 hover:border-gray-300 hover:shadow-md'
+												} ${form.isActive ? 'before:absolute before:inset-y-0 before:left-0 before:w-1.5 before:bg-gradient-to-b before:from-emerald-400 before:to-emerald-600 before:rounded-l-xl' : ''
+												}`}
+											onClick={() => setSelectedForm(form)}
+										>
 											<div className='flex justify-between items-start'>
-												<div className='flex items-start gap-3'>
-													<div className={`p-2 rounded-lg mt-1 ${form.isActive ? 'bg-green-100 text-green-600' : 'bg-gray-100 text-gray-500'}`}>
+												<div className='flex items-start gap-4 flex-1 min-w-0'>
+													<div className={`p-3 rounded-xl mt-1 shadow-sm ${form.isActive
+														? 'bg-gradient-to-br from-emerald-500 to-emerald-600 text-white'
+														: 'bg-gradient-to-br from-gray-200 to-gray-300 text-gray-600'
+														}`}>
 														<FiFileText className='w-5 h-5' />
 													</div>
-													<div>
-														<div className='flex items-center gap-2'>
+													<div className='flex-1 min-w-0'>
+														<div className='flex items-center gap-2 mb-2'>
 															{editingFormId === form.id ? (
-																<div className="flex items-center gap-2 rounded-lg bg-slate-50 px-2 py-1 shadow-sm">
+																<div className="flex items-center gap-2 rounded-xl bg-white px-3 py-2 shadow-lg border-2 border-indigo-300 w-full">
 																	<input
 																		value={editedTitle}
 																		onChange={(e) => setEditedTitle(e.target.value)}
 																		autoFocus
 																		placeholder="Form title"
-																		className=" w-full bg-transparent text-sm text-slate-800 placeholder:text-slate-400 outline-none focus:ring-2 focus:ring-indigo-500/40 rounded-md px-2 py-1 transition "
+																		className="flex-1 bg-transparent text-sm text-gray-800 placeholder:text-gray-400 outline-none focus:ring-2 focus:ring-indigo-500/40 rounded-lg px-2 py-1 transition"
 																	/>
 
 																	{/* Save */}
 																	<button
 																		onClick={() => handleSaveTitle(form.id)}
-																		title="حفظ"
-																		className=" flex-none flex items-center justify-center h-8 w-8 rounded-full bg-green-100 text-green-700 hover:bg-green-200 active:scale-95 transition "
+																		title="Save"
+																		className="flex-none flex items-center justify-center h-9 w-9 rounded-xl bg-emerald-100 text-emerald-700 hover:bg-emerald-200 shadow-sm active:scale-95 transition"
 																	>
-																		<Check size={16} strokeWidth={2.2} />
+																		<Check size={18} strokeWidth={2.5} />
 																	</button>
 
 																	{/* Cancel */}
 																	<button
 																		onClick={() => setEditingFormId(null)}
-																		title="إلغاء"
-																		className=" flex-none flex items-center justify-center h-8 w-8 rounded-full bg-slate-200 text-slate-600 hover:bg-slate-300 active:scale-95 transition "
+																		title="Cancel"
+																		className="flex-none flex items-center justify-center h-9 w-9 rounded-xl bg-gray-200 text-gray-600 hover:bg-gray-300 shadow-sm active:scale-95 transition"
 																	>
-																		<X size={16} strokeWidth={2.2} />
+																		<X size={18} strokeWidth={2.5} />
 																	</button>
 																</div>
-
 															) : (
-																<div className="group flex items-center gap-2">
-																	<h3 className="text-lg font-semibold text-slate-800 tracking-tight">
+																<div className="flex items-center gap-2 flex-1 min-w-0">
+																	<h3 className={`text-lg font-bold tracking-tight truncate ${selectedForm?.id === form.id ? 'text-indigo-900' : 'text-gray-800'
+																		}`}>
 																		{form.title}
 																	</h3>
 
 																	{/* Edit */}
 																	<button
-																		onClick={() => {
+																		onClick={(e) => {
+																			e.stopPropagation();
 																			setEditingFormId(form.id);
 																			setEditedTitle(form.title);
 																		}}
-																		title="تعديل العنوان"
-																		className=" inline-flex items-center justify-center h-8 w-8 rounded-full bg-indigo-50 text-indigo-700 hover:bg-indigo-100  active:scale-95 transition "
+																		title="Edit title"
+																		className="flex-shrink-0 inline-flex items-center justify-center h-8 w-8 rounded-lg bg-indigo-100 text-indigo-700 hover:bg-indigo-200 opacity-0 group-hover:opacity-100 active:scale-95 transition-all"
 																	>
-																		<Pencil size={16} strokeWidth={2.2} />
+																		<Pencil size={16} strokeWidth={2.5} />
 																	</button>
+
+																	{form.isActive && (
+																		<span className='flex-shrink-0 inline-flex items-center px-2.5 py-1 rounded-full text-xs font-bold bg-emerald-100 text-emerald-700 border border-emerald-300'>
+																			{t('active')}
+																		</span>
+																	)}
 																</div>
-
 															)}
-
-															{form.isActive && <span className='inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800'>{t('active')}</span>}
 														</div>
-														<p className='text-sm text-gray-600 mt-1 line-clamp-2'>{form.description || t('noDescription')}</p>
+														<p className='text-sm text-gray-600 line-clamp-2 leading-relaxed'>
+															{form.description || <span className='italic text-gray-400'>{t('noDescription')}</span>}
+														</p>
 													</div>
 												</div>
 
-												<div className='flex items-center gap-2'>
-
-													<div className='flex items-center gap-1'>
-														<button
-															onClick={e => {
-																e.stopPropagation();
-																setShowFileManagerModal(true);
-															}}
-															className='p-1.5 cursor-pointer text-gray-500 hover:text-blue-600 hover:bg-blue-50 rounded-full transition-colors'
-															title={t('fileManager') || 'File Manager'}>
-															<FiFile className='w-4 h-4' />
-														</button>
-														<button
-															onClick={e => {
-																e.stopPropagation();
-																handleDownloadFormTemplate(form);
-															}}
-															className='p-1.5 cursor-pointer text-gray-500 hover:text-indigo-600 hover:bg-indigo-50 rounded-full transition-colors'
-															title={t('downloadTemplate') || 'Download Template'}>
-															<FiDownload className='w-4 h-4' />
-														</button>
-														<button
-															onClick={e => {
-																e.stopPropagation();
-																setCurrentUploadFormId(form.id);
-																templateFileInputRef.current?.click();
-															}}
-															disabled={uploadingFormId === form.id}
-															className={`p-1.5 cursor-pointer text-gray-500 hover:text-green-600 hover:bg-green-50 rounded-full transition-colors ${uploadingFormId === form.id ? 'opacity-50 cursor-not-allowed' : ''}`}
-															title={t('uploadExcel') || 'Upload Excel'}>
-															{uploadingFormId === form.id ? (
-																<svg className='animate-spin h-4 w-4' xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24'>
-																	<circle className='opacity-25' cx='12' cy='12' r='10' stroke='currentColor' strokeWidth='4'></circle>
-																	<path className='opacity-75' fill='currentColor' d='M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z'></path>
-																</svg>
-															) : (
-																<FiUpload className='w-4 h-4' />
-															)}
-														</button>
-														<button
-															onClick={e => {
-																e.stopPropagation();
-																setShowDeleteModal({ show: true, id: form.id, type: 'form' });
-															}}
-															className='p-1.5 cursor-pointer text-gray-500 hover:text-red-600 hover:bg-red-50 rounded-full transition-colors'
-															title={t('delete')}>
-															<FiTrash2 className='w-4 ' />
-														</button>
-													</div>
+												{/* Action Buttons */}
+												<div className='flex items-center gap-1 ml-2'>
+													<button
+														onClick={e => {
+															e.stopPropagation();
+															setShowFileManagerModal(true);
+														}}
+														className='p-2 cursor-pointer text-gray-500 hover:text-blue-600 hover:bg-blue-100 rounded-lg transition-all active:scale-90'
+														title={t('fileManager') || 'File Manager'}
+													>
+														<FiFile className='w-4 h-4' />
+													</button>
+													<button
+														onClick={e => {
+															e.stopPropagation();
+															handleDownloadFormTemplate(form);
+														}}
+														className='p-2 cursor-pointer text-gray-500 hover:text-indigo-600 hover:bg-indigo-100 rounded-lg transition-all active:scale-90'
+														title={t('downloadTemplate') || 'Download Template'}
+													>
+														<FiDownload className='w-4 h-4' />
+													</button>
+													<button
+														onClick={e => {
+															e.stopPropagation();
+															setCurrentUploadFormId(form.id);
+															templateFileInputRef.current?.click();
+														}}
+														disabled={uploadingFormId === form.id}
+														className={`p-2 cursor-pointer text-gray-500 hover:text-emerald-600 hover:bg-emerald-100 rounded-lg transition-all active:scale-90 ${uploadingFormId === form.id ? 'opacity-50 cursor-not-allowed' : ''
+															}`}
+														title={t('uploadExcel') || 'Upload Excel'}
+													>
+														{uploadingFormId === form.id ? (
+															<svg className='animate-spin h-4 w-4' xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24'>
+																<circle className='opacity-25' cx='12' cy='12' r='10' stroke='currentColor' strokeWidth='4'></circle>
+																<path className='opacity-75' fill='currentColor' d='M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z'></path>
+															</svg>
+														) : (
+															<FiUpload className='w-4 h-4' />
+														)}
+													</button>
+													<button
+														onClick={e => {
+															e.stopPropagation();
+															setShowDeleteModal({ show: true, id: form.id, type: 'form' });
+														}}
+														className='p-2 cursor-pointer text-gray-500 hover:text-rose-600 hover:bg-rose-100 rounded-lg transition-all active:scale-90'
+														title={t('delete')}
+													>
+														<FiTrash2 className='w-4 h-4' />
+													</button>
 												</div>
 											</div>
 
-											<div className='flex justify-between items-center mt-3 pt-3 border-t border-gray-100'>
-												<div className='flex items-center justify-center gap-2' >
-													<span className={`text-xs px-2 py-1 rounded-full ${form.isActive ? 'bg-green-100 text-green-800' : 'bg-indigo-100 text-indigo-800'}`}>
+											{/* Footer */}
+											<div className='flex justify-between items-center mt-4 pt-4 border-t-2 border-gray-200'>
+												<div className='flex items-center gap-2'>
+													<span className={`text-xs font-semibold px-3 py-1.5 rounded-full ${form.isActive
+														? 'bg-emerald-100 text-emerald-700 border border-emerald-300'
+														: 'bg-indigo-100 text-indigo-700 border border-indigo-300'
+														}`}>
 														{form.fields?.length || 0} {form.fields?.length === 1 ? t('field') : t('fields')}
 													</span>
-													<span className='inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-gray-100 text-gray-700 text-nowrap'>ID: {form.id}</span>
-
+													<span className='inline-flex items-center px-3 py-1.5 rounded-full text-xs font-bold bg-gray-100 text-gray-700 border border-gray-300'>
+														ID: {form.id}
+													</span>
 												</div>
-												<span className='text-xs text-gray-500'>
-													{t('created')} {new Date(form.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
-												</span>
+												<div className='flex items-center gap-1.5 text-xs text-gray-500'>
+													<svg className='w-3.5 h-3.5' fill='none' stroke='currentColor' viewBox='0 0 24 24'>
+														<path strokeLinecap='round' strokeLinejoin='round' strokeWidth={2} d='M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z' />
+													</svg>
+													<span>
+														{new Date(form.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
+													</span>
+												</div>
 											</div>
 										</div>
 									))
 								) : (
-									<div className='text-center py-10'>
-										<div className='mx-auto w-16 h-16 bg-indigo-50 rounded-full flex items-center justify-center mb-4'>
-											<FiFileText className='w-8 h-8 text-indigo-400' />
+									<div className='text-center py-16'>
+										<div className='mx-auto w-20 h-20 bg-gradient-to-br from-indigo-100 to-indigo-200 rounded-full flex items-center justify-center mb-4 shadow-lg'>
+											<FiFileText className='w-10 h-10 text-indigo-600' />
 										</div>
-										<h3 className='text-lg font-medium text-gray-700 mb-1'>{t('noForms')}</h3>
-										<p className='text-sm text-gray-500 mb-4'>{t('createFirstForm')}</p>
-										<button onClick={() => setShowNewFormModal(true)} className='inline-flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg text-sm transition-all'>
+										<h3 className='text-xl font-bold text-gray-800 mb-2'>{t('noForms')}</h3>
+										<p className='text-sm text-gray-500 mb-6 max-w-xs mx-auto'>{t('createFirstForm')}</p>
+										<button
+											onClick={() => setShowNewFormModal(true)}
+											className='inline-flex items-center gap-2 bg-gradient-to-r from-indigo-600 to-indigo-500 hover:from-indigo-700 hover:to-indigo-600 text-white px-6 py-3 rounded-xl text-sm font-semibold shadow-lg hover:shadow-xl transition-all active:scale-95'
+										>
 											<FiPlus className='h-4 w-4' />
 											{t('createForm')}
 										</button>
@@ -2439,16 +2621,29 @@ export default function DashboardPage() {
 							</div>
 						</div>
 
-						<div className='bg-white rounded-xl shadow-sm overflow-hidden border border-gray-100'>
-							<div className='p-6 border-b border-gray-100 bg-gradient-to-r from-gray-50 to-white'>
-								<h2 className='text-xl font-bold text-gray-800 flex items-center gap-2'>
-									<FiEdit3 className='text-indigo-500' />
-									{t('formBuilder')}
-								</h2>
-								<p className='text-sm text-gray-500 mt-1'>{selectedForm ? `${t('editing')}: ${selectedForm.title}` : t('selectForm')}</p>
+						{/* Form Builder Section */}
+						<div className='bg-gradient-to-br from-white to-gray-50/50 rounded-2xl shadow-lg overflow-hidden border-2 border-gray-200'>
+							{/* Header */}
+							<div className='bg-gradient-to-r from-gray-50 to-gray-100/50 p-6 border-b-2 border-gray-200'>
+								<div className='flex items-center gap-3 mb-2'>
+									<div className='p-2.5 bg-indigo-100 rounded-xl'>
+										<FiEdit3 className='text-indigo-600 w-5 h-5' />
+									</div>
+									<h2 className='text-2xl font-bold text-gray-900'>{t('formBuilder')}</h2>
+								</div>
+								<p className='text-sm text-gray-600 ml-14'>
+									{selectedForm ? (
+										<>
+											<span className='font-semibold text-indigo-600'>{t('editing')}:</span> {selectedForm.title}
+										</>
+									) : (
+										t('selectForm')
+									)}
+								</p>
 							</div>
 
-							<div className='p-5'>
+							{/* Builder Content */}
+							<div className='p-6'>
 								{selectedForm ? (
 									<>
 										<DragDropContext onDragEnd={onDragEnd}>
@@ -2458,48 +2653,69 @@ export default function DashboardPage() {
 														{selectedForm.fields
 															?.sort((a, b) => a.order - b.order)
 															.map((field, index) => (
-																<Draggable key={field.id?.toString() || `new-field-${index}`} draggableId={field.id?.toString() || `new-field-${index}`} index={index}>
+																<Draggable
+																	key={field.id?.toString() || `new-field-${index}`}
+																	draggableId={field.id?.toString() || `new-field-${index}`}
+																	index={index}
+																>
 																	{(provided, snapshot) => (
 																		<div
 																			ref={provided.innerRef}
 																			{...provided.draggableProps}
-																			className={`p-5 cursor-pointer rounded-lg transition-all duration-200 ease-in-out relative overflow-hidden group
-                                ${snapshot.isDragging ? 'bg-indigo-100 shadow-lg ring-2 ring-indigo-300' : 'bg-white border border-gray-200 hover:border-indigo-200 hover:ring-1 hover:ring-indigo-100'}`}
-																			onClick={() => openEditFieldModal(field)}>
+																			className={`p-5 cursor-pointer rounded-xl transition-all duration-200 ease-in-out relative overflow-hidden group ${snapshot.isDragging
+																				? 'bg-gradient-to-r from-indigo-100 to-indigo-200 shadow-2xl ring-2 ring-indigo-400 scale-105'
+																				: 'bg-white border-2 border-gray-200 hover:border-indigo-300 hover:shadow-md'
+																				}`}
+																			onClick={() => openEditFieldModal(field)}
+																		>
 																			<div className='flex items-start gap-4'>
-																				<div {...provided.dragHandleProps} className='p-1 -ml-1 text-gray-400 hover:text-gray-600 cursor-grab active:cursor-grabbing'>
+																				{/* Drag Handle */}
+																				<div
+																					{...provided.dragHandleProps}
+																					className='p-2 -ml-1 text-gray-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-lg cursor-grab active:cursor-grabbing transition-colors'
+																				>
 																					<FaGripVertical className='h-5 w-5' />
 																				</div>
 
-																				<div className='flex-1 min-w-0 space-y-2'>
-																					<div className='flex justify-between items-start gap-2'>
-																						<h4 className='font-semibold text-gray-800 flex items-center gap-1 '>
-																							{field.label}
+																				{/* Field Content */}
+																				<div className='flex-1 min-w-0 space-y-3'>
+																					<div className='flex justify-between items-start gap-3'>
+																						<h4 className='font-bold text-gray-800 flex items-center gap-2'>
+																							<span className='truncate'>{field.label}</span>
 																							{field.required && (
-																								<span className=' -mt-2 text-xs text-red-500'>
+																								<span className='flex-shrink-0 text-xs text-rose-500'>
 																									<FaAsterisk />
 																								</span>
 																							)}
 																						</h4>
 
-																						<div>
-																							<span className={`text-xs px-2 py-1 rounded-full capitalize   ${getFieldTypeColor(field.type).bg}   ${getFieldTypeColor(field.type).text}`}>{t(field.type)}</span>
-																						</div>
+																						<span className={`flex-shrink-0 text-xs font-bold px-3 py-1.5 rounded-full capitalize border-2 ${getFieldTypeColor(field.type).bg
+																							} ${getFieldTypeColor(field.type).text
+																							}`}>
+																							{t(field.type)}
+																						</span>
 																					</div>
 
 																					{field.placeholder && (
-																						<p className='text-xs text-gray-500 bg-gray-50 px-2 py-1 rounded inline-block'>
-																							{t('placeholder')}: "{field.placeholder}"
+																						<p className='text-xs text-gray-600 bg-gray-100 px-3 py-1.5 rounded-lg inline-block border border-gray-200'>
+																							<span className='font-semibold text-gray-700'>{t('placeholder')}:</span> "{field.placeholder}"
 																						</p>
 																					)}
 
 																					{field.options?.length > 0 && (
-																						<div className='flex flex-wrap gap-1 pt-1'>
+																						<div className='flex flex-wrap gap-2 pt-1'>
 																							{field.options.map(option => (
-																								<span key={option} className='text-xs px-2 py-1 bg-white text-gray-600 rounded-md border border-gray-200 shadow-xs flex items-center gap-1'>
+																								<span
+																									key={option}
+																									className='text-xs px-3 py-1.5 bg-white text-gray-700 rounded-lg border-2 border-gray-200 shadow-sm font-medium flex items-center gap-1.5'
+																								>
 																									{field.type === 'checkbox' || field.type === 'radio' ? (
 																										<>
-																											{field.type === 'checkbox' ? <FiCheck className='w-3 h-3 text-gray-400' /> : <FiCircle className='w-3 h-3 text-gray-400' />}
+																											{field.type === 'checkbox' ? (
+																												<FiCheck className='w-3 h-3 text-emerald-500' />
+																											) : (
+																												<FiCircle className='w-3 h-3 text-indigo-500' />
+																											)}
 																											{option}
 																										</>
 																									) : (
@@ -2511,24 +2727,33 @@ export default function DashboardPage() {
 																					)}
 
 																					{field.length && (
-																						<p className='text-xs text-indigo-600 bg-indigo-50 px-2 py-1 rounded inline-block mt-1'>
+																						<p className='text-xs font-semibold text-indigo-700 bg-indigo-100 px-3 py-1.5 rounded-lg inline-block border border-indigo-300'>
 																							{t('length')}: {field.length}
 																						</p>
 																					)}
 																				</div>
 
-																				<div className='flex items-center gap-1 '>
+																				{/* Action Buttons */}
+																				<div className='flex items-center gap-1'>
 																					<button
 																						onClick={e => {
 																							e.stopPropagation();
 																							setShowDeleteModal({ show: true, id: field.id, type: 'field' });
 																						}}
-																						className='cursor-pointer p-1.5 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-full transition-colors'
-																						title={t('delete')}>
+																						className='cursor-pointer p-2 text-gray-400 hover:text-rose-600 hover:bg-rose-100 rounded-lg transition-all active:scale-90'
+																						title={t('delete')}
+																					>
 																						<FiTrash2 className='h-4 w-4' />
 																					</button>
 
-																					<button onClick={() => openEditFieldModal(field)} className='p-1.5 cursor-pointer text-gray-500 hover:text-indigo-600 hover:bg-indigo-50 rounded-full transition-colors' title={t('edit')}>
+																					<button
+																						onClick={(e) => {
+																							e.stopPropagation();
+																							openEditFieldModal(field);
+																						}}
+																						className='p-2 cursor-pointer text-gray-400 hover:text-indigo-600 hover:bg-indigo-100 rounded-lg transition-all active:scale-90'
+																						title={t('edit')}
+																					>
 																						<FiEdit2 className='w-4 h-4' />
 																					</button>
 																				</div>
@@ -2543,27 +2768,32 @@ export default function DashboardPage() {
 											</Droppable>
 										</DragDropContext>
 
+										{/* Add Field Button */}
 										<button
 											onClick={() => {
 												setEditField(null);
 												resetFieldForm({ type: 'text', required: false });
 												setShowNewFieldModal(true);
 											}}
-											className='group mt-6 w-full flex items-center justify-center gap-3 bg-white border border-dashed border-gray-300 rounded-lg p-4 text-gray-500 hover:border-indigo-400 hover:text-indigo-600 hover:bg-indigo-50 transition-all duration-200 shadow-xs hover:shadow-sm'>
-											<div className='p-1.5 bg-indigo-100 text-indigo-600 rounded-full group-hover:bg-indigo-200 transition-colors'>
-												<FiPlus className='h-4 w-4' />
+											className='group mt-6 w-full flex items-center justify-center gap-3 bg-white border-2 border-dashed border-gray-300 rounded-xl p-5 text-gray-500 hover:border-indigo-400 hover:text-indigo-600 hover:bg-indigo-50 transition-all duration-200 shadow-sm hover:shadow-md'
+										>
+											<div className='p-2 bg-indigo-100 text-indigo-600 rounded-xl group-hover:bg-indigo-200 group-hover:scale-110 transition-all'>
+												<FiPlus className='h-5 w-5' />
 											</div>
-											<span className='font-medium'>{t('addNewField')}</span>
+											<span className='font-bold text-base'>{t('addNewField')}</span>
 										</button>
 									</>
 								) : (
-									<div className='flex flex-col items-center justify-center py-12 px-4 text-center bg-gray-50 rounded-lg border-2 border-dashed border-gray-300'>
-										<div className='bg-indigo-100 p-4 rounded-full mb-4'>
-											<FiEdit2 className='h-6 w-6 text-indigo-600' />
+									<div className='flex flex-col items-center justify-center py-16 px-4 text-center bg-gradient-to-br from-gray-50 to-gray-100/50 rounded-xl border-2 border-dashed border-gray-300'>
+										<div className='bg-gradient-to-br from-indigo-100 to-indigo-200 p-5 rounded-full mb-4 shadow-lg'>
+											<FiEdit2 className='h-8 w-8 text-indigo-600' />
 										</div>
-										<h3 className='text-lg font-semibold text-gray-700 mb-2'>{t('selectForm')}</h3>
-										<p className='text-sm text-gray-500 max-w-xs mb-4'>{t('selectFormDescription')}</p>
-										<button onClick={() => setShowNewFormModal(true)} className='inline-flex items-center gap-2 text-indigo-600 hover:text-indigo-700 text-sm font-medium'>
+										<h3 className='text-xl font-bold text-gray-800 mb-2'>{t('selectForm')}</h3>
+										<p className='text-sm text-gray-500 max-w-xs mb-6'>{t('selectFormDescription')}</p>
+										<button
+											onClick={() => setShowNewFormModal(true)}
+											className='inline-flex items-center gap-2 text-indigo-600 hover:text-indigo-700 text-sm font-bold hover:underline'
+										>
 											<FiPlus className='h-4 w-4' />
 											{t('orCreateNewForm')}
 										</button>
@@ -2589,69 +2819,124 @@ export default function DashboardPage() {
 				/>
 
 				{activeTab === 'submissions' && (
-					<div className='bg-white rounded-xl shadow-md overflow-hidden'>
-						<div className='p-5 border-b border-gray-100 flex items-center justify-between flex-wrap gap-4'>
-							<div>
-								<h2 className='text-xl font-bold text-gray-800 flex items-center gap-2'>
-									<FiFileText className='text-indigo-500' />
-									{t('formSubmissions')}
-								</h2>
-								<p className='text-sm text-gray-500 mt-1'>
-									{subSearch ? filteredCount : (selectedFormId == 'all' ? submissions.length : submissions?.filter(e => e.form_id == selectedFormId).length)} {t('totalSubmissions')}
-								</p>
+					<div className='bg-gradient-to-br from-white to-gray-50/50 rounded-2xl shadow-lg border border-gray-100 overflow-hidden'>
+						{/* Header Section */}
+						<div className='bg-white border-b border-gray-100'>
+							<div className='p-6'>
+								<div className='flex items-start justify-between flex-wrap gap-6'>
+									{/* Title Area */}
+									<div className='flex-1 min-w-[200px]'>
+										<div className='flex items-center gap-3 mb-2'>
+											<div className='p-2.5 bg-indigo-50 rounded-xl'>
+												<FiFileText className='text-indigo-600 w-5 h-5' />
+											</div>
+											<h2 className='text-2xl font-bold text-gray-900'>
+												{t('formSubmissions')}
+											</h2>
+										</div>
+									</div>
 
-							</div>
+									{/* Actions Area */}
+									<div className='flex flex-wrap items-center gap-3'>
+										{/* Search Input */}
+										<div className='relative group'>
+											<div className='absolute inset-y-0 left-3 flex items-center pointer-events-none'>
+												<svg className='w-4 h-4 text-gray-400 group-focus-within:text-indigo-500 transition-colors' fill='none' stroke='currentColor' viewBox='0 0 24 24'>
+													<path strokeLinecap='round' strokeLinejoin='round' strokeWidth={2} d='M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z' />
+												</svg>
+											</div>
+											<input
+												value={subSearch}
+												onChange={(e) => {
+													setSubSearch(e.target.value);
+													setCurrentPage(1);
+												}}
+												placeholder={t('searchWithNationalID') + '...'}
+												className='w-[240px] pl-10 pr-4 py-2.5 border border-gray-200 rounded-xl text-sm bg-white hover:border-gray-300 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all placeholder:text-gray-400'
+											/>
+										</div>
 
-							{/* Form ID Filter Dropdown */}
-							<div className='flex flex-wrap items-center gap-2'>
+										{/* Form Filter */}
+										<div className='relative'>
+											<select
+												id='formFilter'
+												value={selectedFormId}
+												onChange={e => setSelectedFormId(e.target.value)}
+												className='appearance-none truncate min-w-[160px] px-3 py-2.5 border border-gray-200 rounded-xl text-sm bg-white hover:border-gray-300 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all cursor-pointer'
+											>
+												<option value='all'>{t('allForms')}</option>
+												{Array.from(new Set(submissions.map(s => s.form_id))).map(formId => (
+													<option className='truncate' key={formId} value={formId}>
+														{forms.find(e => e.id == formId)?.title || 'Unknown'}
+													</option>
+												))}
+											</select>
 
-								<div className="relative">
-									<input
-										value={subSearch}
-										onChange={(e) => {
-											setSubSearch(e.target.value);
-											setCurrentPage(1);
-										}}
-										placeholder={t('searchWithNationalID') + '...'}
-										className="w-[220px] border border-gray-300 rounded-md px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
-									/>
+										</div>
+
+										{/* Project Filter */}
+										<div className='relative'>
+											<select
+												value={selectedProjectId}
+												onChange={e => setSelectedProjectId(e.target.value)}
+												className='appearance-none truncate min-w-[160px] px-3 py-2.5 border border-gray-200 rounded-xl text-sm bg-white hover:border-gray-300 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all cursor-pointer'
+											>
+												<option value='all'>{t('allProjects')}</option>
+												{clients.map(e => (
+													<option key={e.id} value={e.id}>
+														{e.name}
+													</option>
+												))}
+											</select>
+
+										</div>
+
+										{/* Limit Filter */}
+										<div className='relative'>
+											<select
+												value={selectedLimit}
+												onChange={e => setSelectedLimit(Number(e.target.value))}
+												className='appearance-none truncate min-w-[130px] px-3 py-2.5 border border-gray-200 rounded-xl text-sm bg-white hover:border-gray-300 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all cursor-pointer'
+											>
+												{[10, 20, 30, 40, 50, 100, 200].map(limit => (
+													<option key={limit} value={limit}>
+														{limit} {t('perPage')}
+													</option>
+												))}
+											</select>
+
+										</div>
+
+										{/* Export Button */}
+										<button
+											onClick={exportToExcel}
+											disabled={isExporting}
+											className='flex items-center gap-2 bg-gradient-to-r from-emerald-600 to-emerald-500 hover:from-emerald-700 hover:to-emerald-600 text-white px-4 py-2.5 rounded-xl text-sm font-medium shadow-sm hover:shadow-md transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed active:scale-[0.98]'
+										>
+											{isExporting ? (
+												<>
+													<svg className="animate-spin h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+														<circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+														<path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+													</svg>
+													<span>{t('exporting')}</span>
+												</>
+											) : (
+												<>
+													<FiDownload className='h-4 w-4' />
+													<span>{t('exportExcel')}</span>
+												</>
+											)}
+										</button>
+									</div>
 								</div>
-
-
-								<select id='formFilter' value={selectedFormId} onChange={e => setSelectedFormId(e.target.value)} className=' truncate !w-[150px] !max-w-fit border border-gray-300 rounded-md px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500'>
-									<option value='all'>{t('allForms')}</option>
-									{Array.from(new Set(submissions.map(s => s.form_id))).map(formId => (
-										<option className='max-w-[100px] w-full truncate ' key={formId} value={formId}>
-											{forms.find(e => e.id == formId)?.title || 'unKnown'}
-										</option>
-									))}
-								</select>
-
-								<select value={selectedProjectId} onChange={e => setSelectedProjectId(e.target.value)} className='truncate !w-[150px] border border-gray-300 rounded-md px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500'>
-									<option value='all'>{t('allProjects')}</option>
-									{clients.map(e => {
-										return (
-											<option key={e.id} value={e.id}>
-												{e.name}
-											</option>
-										);
-									})}
-								</select>
-
-								<select value={selectedLimit} onChange={e => setSelectedLimit(Number(e.target.value))} className='truncate !w-[150px] border border-gray-300 rounded-md px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500'>
-									{[10, 20, 30, 40, 50, 100, 200].map(limit => (
-										<option key={limit} value={limit}>
-											{limit} {t('perPage')}
-										</option>
-									))}
-								</select>
-								<button onClick={exportToExcel} disabled={isExporting} className='flex-none flex items-center gap-2 bg-green-600 hover:bg-green-700 text-white px-3 py-1.5 rounded-md text-sm transition-colors cursor-pointer disabled:opacity-50'>
-									<FiDownload className='h-4 w-4' />
-									<span>{isExporting ? t('exporting') : t('exportExcel')}</span>
-								</button>
 							</div>
 						</div>
-						<div className='p-4'>{renderSubmissionTable()}</div>
+
+						{/* Table Section */}
+						<div className='p-6'>
+							{renderSubmissionTable()}
+						</div>
 					</div>
 				)}
 
@@ -2659,7 +2944,7 @@ export default function DashboardPage() {
 
 				{activeTab === 'projects' && <ProjectsTab user={user} t={t} />}
 
-                {activeTab === 'employeeRequests' && <EmployeeRequestsTab language={language} t={t} />}
+				{activeTab === 'employeeRequests' && <EmployeeRequestsTab language={language} t={t} />}
 
 			</main>
 
@@ -2688,28 +2973,28 @@ export default function DashboardPage() {
 							{formErrors.description && <p className='mt-1 text-sm text-red-600'>{formErrors.description.message}</p>}
 						</div>
 
-                        <div className='grid grid-cols-1 md:grid-cols-2 gap-4'>
-                            <div>
-                                <label className='block text-sm font-medium text-gray-700'>{t('type')}</label>
-                                <select className='mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500' {...registerForm('type')}>
-                                    <option value='project'>{t('project_type')}</option>
-                                    <option value='employee_request'>{t('employee_request_type')}</option>
-                                </select>
-                            </div>
+						<div className='grid grid-cols-1 md:grid-cols-2 gap-4'>
+							<div>
+								<label className='block text-sm font-medium text-gray-700'>{t('type')}</label>
+								<select className='mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500' {...registerForm('type')}>
+									<option value='project'>{t('project_type')}</option>
+									<option value='employee_request'>{t('employee_request_type')}</option>
+								</select>
+							</div>
 
-                            {formType === 'employee_request' && (
-                                <div>
-                                    <label className='block text-sm font-medium text-gray-700'>{t('approvalFlow')}</label>
-                                    <select className='mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500' {...registerForm('approvalFlow')}>
-                                        <option value='none'>{t('none')}</option>
-                                        <option value='hr_only'>{t('hr_only')}</option>
-                                        <option value='supervisor_only'>{t('supervisor_only')}</option>
-                                        <option value='hr_then_supervisor'>{t('hr_then_supervisor')}</option>
-                                        <option value='supervisor_then_hr'>{t('supervisor_then_hr')}</option>
-                                    </select>
-                                </div>
-                            )}
-                        </div>
+							{formType === 'employee_request' && (
+								<div>
+									<label className='block text-sm font-medium text-gray-700'>{t('approvalFlow')}</label>
+									<select className='mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500' {...registerForm('approvalFlow')}>
+										<option value='none'>{t('none')}</option>
+										<option value='hr_only'>{t('hr_only')}</option>
+										<option value='supervisor_only'>{t('supervisor_only')}</option>
+										<option value='hr_then_supervisor'>{t('hr_then_supervisor')}</option>
+										<option value='supervisor_then_hr'>{t('supervisor_then_hr')}</option>
+									</select>
+								</div>
+							)}
+						</div>
 					</div>
 					<div className='bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse rounded-b-lg mt-4'>
 						<button type='submit' className='w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-indigo-600 text-base font-medium text-white hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:ml-3 sm:w-auto sm:text-sm cursor-pointer'>
@@ -2768,11 +3053,11 @@ export default function DashboardPage() {
 								<label htmlFor='field-length' className='block text-sm font-medium text-gray-700'>
 									{t('length')}
 								</label>
-								<input 
-									type='number' 
-									id='field-length' 
-									className={`mt-1 block w-full border ${fieldErrors.length ? 'border-red-300' : 'border-gray-300'} rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500`} 
-									{...registerField('length')} 
+								<input
+									type='number'
+									id='field-length'
+									className={`mt-1 block w-full border ${fieldErrors.length ? 'border-red-300' : 'border-gray-300'} rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500`}
+									{...registerField('length')}
 								/>
 								{fieldErrors.length && <p className='mt-1 text-sm text-red-600'>{fieldErrors.length.message}</p>}
 							</div>
@@ -3097,101 +3382,151 @@ export default function DashboardPage() {
 				title={t('fileManager') || 'File Manager'}
 				show={showFileManagerModal}
 				onClose={() => setShowFileManagerModal(false)}
-				cn={"!max-w-2xl"}
+				cn={"!max-w-3xl"}
 			>
 				<div className='space-y-6'>
-					<div>
-						<h3 className='text-sm font-semibold text-gray-700 mb-3'>{t('yourFiles') || 'Your Files'}</h3>
-						<p className='text-xs text-gray-500 mb-4'>{t('fileManagerDescription') || 'Upload files and copy their URLs to use in Excel templates. Hover over an image to see the copy button.'}</p>
-
-						<div className='grid grid-cols-2 sm:grid-cols-3 gap-4 max-h-[500px] min-h-[300px] overflow-y-auto rounded-lg p-2 bg-gray-50 border border-gray-200'>
-							{/* Upload Button as First Item */}
-							<label className='hover:scale-[.98] flex flex-col items-center justify-center text-center p-2 h-[130px] w-full border-2 border-dashed border-indigo-300 rounded-lg bg-indigo-50 hover:bg-indigo-100 cursor-pointer transition duration-300 relative'>
-								<input
-									type='file'
-									ref={fileUploadInputRef}
-									className='sr-only'
-									onChange={handleFileUpload}
-									disabled={uploadingFile}
-								/>
-								<FiUpload className='h-6 w-6 text-indigo-400' />
-								<span className='mt-1 text-xs text-indigo-600'>{t('upload') || 'Upload'}</span>
-
-								{uploadingFile && (
-									<div className='absolute inset-0 bg-white bg-opacity-70 flex items-center justify-center rounded-lg'>
-										<svg className='animate-spin h-5 w-5 text-indigo-500' xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24'>
-											<circle className='opacity-25' cx='12' cy='12' r='10' stroke='currentColor' strokeWidth='4'></circle>
-											<path className='opacity-75' fill='currentColor' d='M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z'></path>
-										</svg>
-									</div>
-								)}
-							</label>
-
-							{/* User Uploaded Files */}
-							{userAssets.map(asset => (
-								<div
-									key={asset.id}
-									className='h-[130px] group relative shadow-inner rounded-lg border border-gray-200 hover:border-indigo-400 transition p-2 bg-white'
-								>
-									{asset.mimeType?.startsWith('image/') ? (
-										<div className='relative h-full'>
-											<img
-												src={baseImg + asset.url}
-												alt={asset.filename}
-												className=' bg-gray-200 h-full mx-auto w-full object-contain rounded'
-											/>
-											{/* Hover overlay with Copy and Delete buttons */}
-											<div className='absolute inset-0 bg-black/50 backdrop-blur-sm bg-opacity-0 group-hover:bg-opacity-50 flex items-center justify-center gap-2 rounded-lg transition-all duration-200 opacity-0 group-hover:opacity-100'>
-												<button
-													onClick={() => copyFileUrl(asset.url)}
-													className='bg-white rounded-full p-2 shadow-lg hover:bg-indigo-50 cursor-pointer transition-colors'
-													title={t('copyUrl') || 'Copy URL'}
-												>
-													<FiCopy className='h-5 w-5 text-indigo-600' />
-												</button>
-												<button
-													onClick={() => handleDeleteAsset(asset.id)}
-													className='bg-white rounded-full p-2 shadow-lg hover:bg-red-50 cursor-pointer transition-colors'
-													title={t('delete') || 'Delete'}
-												>
-													<FiTrash2 className='h-5 w-5 text-red-600' />
-												</button>
-											</div>
-										</div>
-									) : (
-										<div className='h-[80px] w-full p-2 flex items-center justify-center bg-gray-100 rounded-md relative'>
-											<FiFile className='h-full w-full text-gray-400' />
-											{/* Hover overlay with Copy and Delete buttons for non-image files */}
-											<div className='absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-50 flex items-center justify-center gap-2 rounded-lg transition-all duration-200 opacity-0 group-hover:opacity-100'>
-												<button
-													onClick={() => copyFileUrl(asset.url)}
-													className='bg-white rounded-full p-2 shadow-lg hover:bg-indigo-50 cursor-pointer transition-colors'
-													title={t('copyUrl') || 'Copy URL'}
-												>
-													<FiCopy className='h-5 w-5 text-indigo-600' />
-												</button>
-												<button
-													onClick={() => handleDeleteAsset(asset.id)}
-													className='bg-white rounded-full p-2 shadow-lg hover:bg-red-50 cursor-pointer transition-colors'
-													title={t('delete') || 'Delete'}
-												>
-													<FiTrash2 className='h-5 w-5 text-red-600' />
-												</button>
-											</div>
-										</div>
-									)}
-									<p className='mt-2 text-xs text-gray-600 text-center truncate' title={asset.filename}>
-										{asset.filename}
-									</p>
-								</div>
-							))}
+					{/* Header Section */}
+					<div className='bg-gradient-to-r from-indigo-50 to-indigo-100/50 rounded-xl p-5 border-2 border-indigo-200'>
+						<div className='flex items-start gap-4'>
+							<div className='flex-shrink-0 w-12 h-12 rounded-xl bg-gradient-to-br from-indigo-500 to-indigo-600 flex items-center justify-center shadow-lg'>
+								<FiFile className='w-6 h-6 text-white' />
+							</div>
+							<div className='flex-1'>
+								<h3 className='text-base font-bold text-gray-900 mb-1'>
+									{t('yourFiles') || 'Your Files'}
+								</h3>
+								<p className='text-sm text-gray-600 leading-relaxed'>
+									{t('fileManagerDescription') || 'Upload files and copy their URLs to use in Excel templates. Hover over an image to see the copy button.'}
+								</p>
+							</div>
 						</div>
 					</div>
+
+					{/* Files Grid */}
+					<div className='grid grid-cols-2 sm:grid-cols-3 gap-4 max-h-[500px] min-h-[300px] overflow-y-auto scrollbar-custom rounded-xl p-4 bg-gradient-to-br from-gray-50 to-gray-100/50 border-2 border-gray-200'>
+						{/* Upload Button as First Item */}
+						<label className='group relative flex flex-col items-center justify-center text-center p-4 h-[150px] w-full border-2 border-dashed border-indigo-300 rounded-xl bg-white hover:bg-indigo-50 hover:border-indigo-400 cursor-pointer transition-all duration-200 shadow-sm hover:shadow-md active:scale-95 overflow-hidden'>
+							<input
+								type='file'
+								ref={fileUploadInputRef}
+								className='sr-only'
+								onChange={handleFileUpload}
+								disabled={uploadingFile}
+							/>
+
+							<div className='relative z-10'>
+								<div className='w-14 h-14 rounded-full bg-gradient-to-br from-indigo-100 to-indigo-200 flex items-center justify-center mb-3 group-hover:scale-110 transition-transform'>
+									<FiUpload className='h-7 w-7 text-indigo-600' />
+								</div>
+								<span className='text-sm font-semibold text-indigo-700'>{t('upload') || 'Upload File'}</span>
+								<span className='block text-xs text-gray-500 mt-1'>Click to browse</span>
+							</div>
+
+							{uploadingFile && (
+								<div className='absolute inset-0 bg-white/95 backdrop-blur-sm flex flex-col items-center justify-center rounded-xl z-20'>
+									<svg className='animate-spin h-8 w-8 text-indigo-600 mb-2' xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24'>
+										<circle className='opacity-25' cx='12' cy='12' r='10' stroke='currentColor' strokeWidth='4'></circle>
+										<path className='opacity-75' fill='currentColor' d='M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z'></path>
+									</svg>
+									<span className='text-sm font-medium text-indigo-600'>Uploading...</span>
+								</div>
+							)}
+						</label>
+
+						{/* User Uploaded Files */}
+						{userAssets.map(asset => (
+							<div
+								key={asset.id}
+								className='group relative h-[150px] rounded-xl border-2 border-gray-200 hover:border-indigo-300 transition-all duration-200 overflow-hidden bg-white shadow-sm hover:shadow-md'
+							>
+								{asset.mimeType?.startsWith('image/') ? (
+									<div className='relative h-full'>
+										<img
+											src={baseImg + asset.url}
+											alt={asset.filename}
+											className='h-full w-full object-cover'
+										/>
+
+										{/* Gradient Overlay */}
+										<div className='absolute inset-0 bg-gradient-to-t from-black/60 via-black/0 to-black/0 opacity-0 group-hover:opacity-100 transition-opacity duration-200' />
+
+										{/* Action Buttons Overlay */}
+										<div className='absolute inset-0 flex items-center justify-center gap-2 opacity-0 group-hover:opacity-100 transition-all duration-200'>
+											<button
+												onClick={() => copyFileUrl(asset.url)}
+												className='flex items-center justify-center w-11 h-11 bg-white/95 backdrop-blur-sm rounded-xl shadow-lg hover:bg-white hover:scale-110 cursor-pointer transition-all active:scale-95'
+												title={t('copyUrl') || 'Copy URL'}
+											>
+												<FiCopy className='h-5 w-5 text-indigo-600' />
+											</button>
+											<button
+												onClick={() => handleDeleteAsset(asset.id)}
+												className='flex items-center justify-center w-11 h-11 bg-white/95 backdrop-blur-sm rounded-xl shadow-lg hover:bg-white hover:scale-110 cursor-pointer transition-all active:scale-95'
+												title={t('delete') || 'Delete'}
+											>
+												<FiTrash2 className='h-5 w-5 text-rose-600' />
+											</button>
+										</div>
+
+										{/* Filename Badge */}
+										<div className='absolute bottom-0 left-0 right-0 p-2 bg-gradient-to-t from-black/80 to-transparent'>
+											<p className='text-xs font-medium text-white truncate' title={asset.filename}>
+												{asset.filename}
+											</p>
+										</div>
+									</div>
+								) : (
+									<div className='h-full flex flex-col'>
+										{/* File Icon Area */}
+										<div className='flex-1 flex items-center justify-center bg-gradient-to-br from-gray-100 to-gray-200 relative'>
+											<div className='w-16 h-16 rounded-xl bg-white flex items-center justify-center shadow-md'>
+												<FiFile className='h-8 w-8 text-gray-400' />
+											</div>
+
+											{/* Action Buttons Overlay for Files */}
+											<div className='absolute inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center gap-2 opacity-0 group-hover:opacity-100 transition-all duration-200'>
+												<button
+													onClick={() => copyFileUrl(asset.url)}
+													className='flex items-center justify-center w-11 h-11 bg-white/95 backdrop-blur-sm rounded-xl shadow-lg hover:bg-white hover:scale-110 cursor-pointer transition-all active:scale-95'
+													title={t('copyUrl') || 'Copy URL'}
+												>
+													<FiCopy className='h-5 w-5 text-indigo-600' />
+												</button>
+												<button
+													onClick={() => handleDeleteAsset(asset.id)}
+													className='flex items-center justify-center w-11 h-11 bg-white/95 backdrop-blur-sm rounded-xl shadow-lg hover:bg-white hover:scale-110 cursor-pointer transition-all active:scale-95'
+													title={t('delete') || 'Delete'}
+												>
+													<FiTrash2 className='h-5 w-5 text-rose-600' />
+												</button>
+											</div>
+										</div>
+
+										{/* Filename Area */}
+										<div className='p-2 bg-white border-t-2 border-gray-200'>
+											<p className='text-xs font-medium text-gray-700 text-center truncate' title={asset.filename}>
+												{asset.filename}
+											</p>
+										</div>
+									</div>
+								)}
+							</div>
+						))}
+					</div>
+
+					{/* Empty State (if no files) */}
+					{userAssets.length === 0 && (
+						<div className='flex flex-col items-center justify-center py-12 text-center'>
+							<div className='w-20 h-20 rounded-full bg-gradient-to-br from-gray-100 to-gray-200 flex items-center justify-center mb-4'>
+								<FiFile className='w-10 h-10 text-gray-400' />
+							</div>
+							<h4 className='text-base font-semibold text-gray-700 mb-1'>No files yet</h4>
+							<p className='text-sm text-gray-500'>Upload your first file to get started</p>
+						</div>
+					)}
+
 				</div>
 			</Modal>
-
-
-
 		</div>
 	);
 }

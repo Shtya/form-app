@@ -22,7 +22,7 @@ export const LogoutButton = ({ onClick, label = 'Logout', position = { top: '1re
       <div className='relative h-6 flex items-center'>
         <div className='absolute left-0 top-1/2 h-4 w-px -translate-y-1/2'></div>
         <motion.div >
-          <HiOutlineLogout className=' group-hover:rotate-[10deg] duration-300 text-gray-700 text-lg group-hover:text-red-600 ' />
+          <HiOutlineLogout className='rtl:scale-x-[-1] group-hover:rotate-[10deg] duration-300 text-gray-700 text-lg group-hover:text-red-600 ' />
         </motion.div>
         <div className='absolute right-0 top-1/2 h-4 w-px -translate-y-1/2'></div>
       </div>

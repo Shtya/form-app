@@ -14,15 +14,14 @@ const UsersTab = ({ handleGeneratePassword, projects, forms = [], t, setUsers, u
   const [isUploading, setIsUploading] = useState(false);
   const [uploadedUsers, setUploadedUsers] = useState([]);
 
-  // NEW: search + export modal states
   const [search, setSearch] = useState('');
   const [debouncedSearch, setDebouncedSearch] = useState('');
-  const [listLimit, setListLimit] = useState(10); // page size used for list
+  const [listLimit, setListLimit] = useState(10);
   const [totalCount, setTotalCount] = useState(null);
   const [loadingList, setLoadingList] = useState(false);
 
   const [showExportModal, setShowExportModal] = useState(false);
-  const [exportLimit, setExportLimit] = useState(1000); // default CSV limit
+  const [exportLimit, setExportLimit] = useState(1000);
 
   const localTotalPages = useMemo(() => {
     if (!totalCount) return totalUserPages || 1;
@@ -45,7 +44,6 @@ const UsersTab = ({ handleGeneratePassword, projects, forms = [], t, setUsers, u
             search: debouncedSearch || undefined,
           },
         });
-        // Expect { data: User[], total, page, limit }
         setUsers(data.data || []);
         setTotalCount(data.total ?? null);
       } catch (e) {
@@ -128,7 +126,6 @@ const UsersTab = ({ handleGeneratePassword, projects, forms = [], t, setUsers, u
         if (!row['Password']) errors.push(`Missing Password in row ${rowNumber}`);
         if (!row['Role']) errors.push(`Missing Role in row ${rowNumber}`);
         if (!row['Project Name']) errors.push(`Missing Project Name in row ${rowNumber}`);
-        // Form ID is optional, so we don't check for it
       });
 
       if (errors.length > 0) {
@@ -159,7 +156,6 @@ const UsersTab = ({ handleGeneratePassword, projects, forms = [], t, setUsers, u
       });
 
       setUsers(prev => [...response.data.results, ...prev]);
-      // refresh count after import
       setTotalCount(prev => (typeof prev === 'number' ? prev + response.data.results.length : prev));
     } catch (err) {
       toast.error('Failed to read file or upload data');
@@ -169,7 +165,6 @@ const UsersTab = ({ handleGeneratePassword, projects, forms = [], t, setUsers, u
     }
   };
 
-  // NEW: Export logic (CSV)
   const handleExportCSV = async () => {
     try {
       if (!exportLimit || exportLimit < 1) {
@@ -192,7 +187,6 @@ const UsersTab = ({ handleGeneratePassword, projects, forms = [], t, setUsers, u
       const a = document.createElement('a');
       a.href = url;
 
-      // Try to parse filename from header, else fallback
       const cd = res.headers['content-disposition'] || '';
       const match = /filename="?([^"]+)"?/.exec(cd);
       const fallback = `users_export_${new Date().toISOString().slice(0, 19).replace(/[:T]/g, '-')}.csv`;
@@ -211,259 +205,433 @@ const UsersTab = ({ handleGeneratePassword, projects, forms = [], t, setUsers, u
 
   return (
     <div className=''>
-      <div className='bg-white rounded-xl shadow-md overflow-hidden'>
-        <div className='p-5 border-b border-gray-100 flex items-center justify-between flex-wrap gap-4'>
-          <div>
-            <h2 className='text-xl font-bold text-gray-800 flex items-center gap-2'>
-              <FaUser className='text-indigo-500' />
-              {t('users')}
-            </h2>
-            <p className='text-sm text-gray-500 mt-1'>
-              {typeof totalCount === 'number' ? totalCount : users.length} {t('registeredUsers')}
-            </p>
-          </div>
+      <div className='bg-gradient-to-br from-white to-gray-50/50 rounded-2xl shadow-lg border border-gray-100 overflow-hidden'>
+        {/* Header Section */}
+        <div className='bg-white border-b border-gray-100'>
+          <div className='p-6'>
+            <div className='flex items-start justify-between flex-wrap gap-6'>
+              {/* Title Area */}
+              <div className='flex-1 min-w-[200px]'>
+                <div className='flex items-center gap-3 mb-2'>
+                  <div className='p-2.5 bg-indigo-50 rounded-xl'>
+                    <FaUser className='text-indigo-600 w-5 h-5' />
+                  </div>
+                  <h2 className='text-2xl font-bold text-gray-900'>{t('users')}</h2>
+                </div>
+                <div className='flex items-center gap-2 ml-14'>
+                  <div className='h-1.5 w-1.5 rounded-full bg-indigo-500'></div>
+                  <p className='text-sm text-gray-600 font-medium'>
+                    <span className='text-indigo-600 font-semibold'>
+                      {typeof totalCount === 'number' ? totalCount : users.length}
+                    </span>
+                    {' '}{t('registeredUsers')}
+                  </p>
+                </div>
+              </div>
 
-          <div className='flex items-center gap-3 flex-wrap w-full'>
-            {/* NEW: Search box */}
-            <div className='relative flex-1 max-w-[300px] '>
-              <input
-                value={search}
-                onChange={e => {
-                  setSearch(e.target.value);
-                  // reset to first page on a new search
-                  if (currentUserPage !== 1) setCurrentUserPage(1);
-                }}
-                placeholder={t?.('searchUsers') || 'Search users...'}
-                className='w-full  rounded-lg border border-gray-200 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-200 focus:border-indigo-300'
-              />
-              {!!debouncedSearch && (
-                <button onClick={() => setSearch('')} className='absolute rtl:left-2 ltr:right-2 top-1/2 -translate-y-1/2 text-gray-400 text-xs hover:text-gray-600'>
-                  ✕
+              {/* Actions Area */}
+              <div className='flex flex-wrap items-center gap-3 w-full lg:w-auto'>
+                {/* Search Input */}
+                <div className='relative group flex-1 min-w-[270px] max-w-[350px]'>
+                  <div className='absolute inset-y-0 left-3 flex items-center pointer-events-none'>
+                    <svg className='w-4 h-4 text-gray-400 group-focus-within:text-indigo-500 transition-colors' fill='none' stroke='currentColor' viewBox='0 0 24 24'>
+                      <path strokeLinecap='round' strokeLinejoin='round' strokeWidth={2} d='M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z' />
+                    </svg>
+                  </div>
+                  <input
+                    value={search}
+                    onChange={e => {
+                      setSearch(e.target.value);
+                      if (currentUserPage !== 1) setCurrentUserPage(1);
+                    }}
+                    placeholder={t?.('searchUsers') || 'Search users...'}
+                    className='w-full pl-10  pr-4 py-2.5 border border-gray-200 rounded-xl text-sm bg-white hover:border-gray-300 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all placeholder:text-gray-400'
+                  />
+                  {!!debouncedSearch && (
+                    <button
+                      onClick={() => setSearch('')}
+                      className='absolute rtl:left-3 ltr:right-3 top-1/2 -translate-y-1/2 w-5 h-5 flex items-center justify-center rounded-full hover:bg-gray-100 text-gray-400 hover:text-gray-600 transition-colors'
+                    >
+                      <svg className='w-3 h-3' fill='none' stroke='currentColor' viewBox='0 0 24 24'>
+                        <path strokeLinecap='round' strokeLinejoin='round' strokeWidth={2} d='M6 18L18 6M6 6l12 12' />
+                      </svg>
+                    </button>
+                  )}
+                </div>
+
+                {/* Limit Filter */}
+                <div className='relative'>
+                  <select
+                    value={listLimit}
+                    onChange={e => {
+                      const v = Number(e.target.value) || 10;
+                      setListLimit(v);
+                      if (currentUserPage !== 1) setCurrentUserPage(1);
+                    }}
+                    className='appearance-none min-w-[130px] px-3 py-2.5 border border-gray-200 rounded-xl text-sm bg-white hover:border-gray-300 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all cursor-pointer'
+                  >
+                    {[10, 20, 30, 40, 50, 100, 200].map(limit => (
+                      <option key={limit} value={limit}>
+                        {limit} {t('perPage')}
+                      </option>
+                    ))}
+                  </select> 
+                </div>
+
+                {/* New User Button */}
+                <button
+                  onClick={() => {
+                    setShowNewUserModal(true);
+                    handleGeneratePassword();
+                  }}
+                  className='flex items-center gap-2 bg-gradient-to-r from-indigo-600 to-indigo-500 hover:from-indigo-700 hover:to-indigo-600 text-white px-4 py-2.5 rounded-xl text-sm font-medium shadow-sm hover:shadow-md transition-all duration-200 active:scale-[0.98]'
+                >
+                  <FiPlus className='w-4 h-4' />
+                  <span>{t('newUser')}</span>
                 </button>
-              )}
+
+                {/* Download Template Button */}
+                <button
+                  onClick={handleDownloadTemplate}
+                  className='flex items-center gap-2 bg-white border-2 border-gray-200 text-gray-700 px-4 py-2.5 rounded-xl text-sm font-medium hover:bg-gray-50 hover:border-gray-300 transition-all duration-200 shadow-sm active:scale-[0.98]'
+                >
+                  <FiDownload className='w-4 h-4 text-gray-600' />
+                  <span className='hidden sm:inline'>{t('downloadTemplate')}</span>
+                </button>
+
+                {/* Import Users Button */}
+                <button
+                  onClick={() => fileInputRef.current.click()}
+                  className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 shadow-sm active:scale-[0.98] ${
+                    isUploading
+                      ? 'bg-blue-50 border-2 border-blue-200 text-blue-700 cursor-not-allowed'
+                      : 'bg-white border-2 border-blue-200 text-blue-700 hover:bg-blue-50 hover:border-blue-300'
+                  }`}
+                  disabled={isUploading}
+                >
+                  {isUploading ? (
+                    <>
+                      <svg className='animate-spin h-4 w-4 text-blue-600' xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24'>
+                        <circle className='opacity-25' cx='12' cy='12' r='10' stroke='currentColor' strokeWidth='4'></circle>
+                        <path className='opacity-75' fill='currentColor' d='M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z'></path>
+                      </svg>
+                      <span className='hidden sm:inline'>{t('uploading')}...</span>
+                    </>
+                  ) : (
+                    <>
+                      <FiUpload className='w-4 h-4 text-blue-600' />
+                      <span className='hidden sm:inline'>{t('importUsers')}</span>
+                    </>
+                  )}
+                </button>
+                <input type='file' ref={fileInputRef} accept='.xlsx,.xls' className='hidden' onChange={handleUploadExcel} disabled={isUploading} />
+
+                {/* Export Button */}
+                <button
+                  onClick={() => setShowExportModal(true)}
+                  className='flex items-center gap-2 bg-gradient-to-r from-emerald-600 to-emerald-500 hover:from-emerald-700 hover:to-emerald-600 text-white px-4 py-2.5 rounded-xl text-sm font-medium shadow-sm hover:shadow-md transition-all duration-200 active:scale-[0.98]'
+                >
+                  <FiDownload className='h-4 w-4' />
+                  <span className='hidden sm:inline'>{t('exportExcel') || 'Export CSV'}</span>
+                </button>
+              </div>
             </div>
-            <select
-              value={listLimit}
-              onChange={e => {
-                const v = Number(e.target.value) || 10;
-                setListLimit(v);
-                if (currentUserPage !== 1) setCurrentUserPage(1);
-              }}
-              className='truncate !w-[150px] border border-gray-300 rounded-md px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500'>
-              {[10, 20, 30, 40, 50, 100, 200].map(limit => (
-                <option key={limit} value={limit}>
-                  {limit} {t('perPage')}
-                </option>
-              ))}
-            </select>
-
-						{/* New User Button */}
-            <button
-              onClick={() => {
-                setShowNewUserModal(true);
-                handleGeneratePassword();
-              }}
-              className='flex gap-2 items-center cursor-pointer bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg text-sm transition-all duration-200 shadow-md hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-300'>
-              <FiPlus className='w-4 h-4' />
-              <span>{t('newUser')}</span>
-            </button>
-
-            {/* Download Template Button */}
-            <button onClick={handleDownloadTemplate} className='flex items-center cursor-pointer gap-2 bg-white border border-gray-200 text-gray-700 px-4 py-2 rounded-lg text-sm hover:bg-gray-50 hover:border-gray-300 transition-all duration-200 shadow-xs hover:shadow-sm focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-100'>
-              <FiDownload className='w-4 h-4 text-gray-600' />
-              {t('downloadTemplate')}
-            </button>
-
-            {/* Import Users Button */}
-            <button onClick={() => fileInputRef.current.click()} className={`flex items-center gap-2 cursor-pointer px-4 py-2 rounded-lg text-sm transition-all duration-200 shadow-xs hover:shadow-sm focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-100 ${isUploading ? 'bg-green-100 text-green-800 cursor-not-allowed' : 'bg-white border border-green-200 text-green-700 hover:bg-green-50 hover:border-green-300'}`} disabled={isUploading}>
-              {isUploading ? (
-                <>
-                  <svg className='animate-spin h-4 w-4 text-green-600' xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24'>
-                    <circle className='opacity-25' cx='12' cy='12' r='10' stroke='currentColor' strokeWidth='4'></circle>
-                    <path className='opacity-75' fill='currentColor' d='M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z'></path>
-                  </svg>
-                  {t('uploading')}...
-                </>
-              ) : (
-                <>
-                  <FiUpload className='w-4 h-4 text-green-600' />
-                  {t('importUsers')}
-                </>
-              )}
-            </button>
-            <input type='file' ref={fileInputRef} accept='.xlsx,.xls' className='hidden' onChange={handleUploadExcel} disabled={isUploading} />
-
-            
-
-            {/* NEW: Export Button -> opens popup */}
-            <button onClick={() => setShowExportModal(true)} className='flex-none flex items-center gap-2 bg-green-600 hover:bg-green-700 text-white px-3 py-1.5 rounded-md text-sm transition-colors cursor-pointer disabled:opacity-50'>
-              <FiDownload className='h-4 w-4' />
-              <span>{t('exportExcel') || 'Export CSV'}</span>
-            </button>
           </div>
         </div>
 
-        {/* Upload spinner */}
+        {/* Upload Spinner */}
         {isUploading && (
-          <div className='p-8 flex flex-col items-center justify-center relative w-fit mx-auto'>
-            <div className='relative w-14 h-14'>
-              <div className='animate-spin rounded-full h-full w-full border-4 border-gray-200 border-t-indigo-500'></div>
+          <div className='p-12 flex flex-col items-center justify-center bg-gradient-to-b from-indigo-50/50 to-white'>
+            <div className='relative w-16 h-16'>
+              <div className='absolute inset-0 rounded-full border-4 border-indigo-100'></div>
+              <div className='absolute inset-0 rounded-full border-4 border-transparent border-t-indigo-600 animate-spin'></div>
               <div className='absolute inset-0 flex items-center justify-center'>
-                <svg className='w-5 h-5 text-indigo-500 animate-ping' fill='currentColor' viewBox='0 0 20 20'>
-                  <circle cx='10' cy='10' r='5' />
-                </svg>
+                <FiUpload className='w-6 h-6 text-indigo-600 animate-pulse' />
               </div>
             </div>
-            <p className='text-gray-600 mt-4 animate-pulse'>Processing your file...</p>
+            <p className='text-gray-700 font-medium mt-6 text-lg'>Processing your file...</p>
+            <p className='text-gray-500 text-sm mt-1'>Please wait while we import the users</p>
           </div>
         )}
 
-        {/* Users table */}
+        {/* Users Table */}
         {!isUploading && (
-          <div className='p-4'>
+          <div className='p-6'>
             {isLoading.users || loadingList ? (
               <SkeletonLoader count={5} />
             ) : users.length > 0 ? (
               <>
-                <div className='overflow-x-auto scrollbar-custom'>
+                <div className='overflow-x-auto scrollbar-custom rounded-xl border border-gray-200'>
                   <table className='min-w-full divide-y divide-gray-200'>
-                    <thead className='bg-gray-50'>
-                      <tr> 
-                        <th className='px-6 py-3 rtl:text-right ltr:text-left text-xs font-medium text-gray-500 uppercase tracking-wider'>{ 'ID'}</th>
-                        <th className='px-6 py-3 rtl:text-right ltr:text-left text-xs font-medium text-gray-500 uppercase tracking-wider'>{t('national_id')}</th>
-                        <th className='px-6 py-3 rtl:text-right ltr:text-left text-xs font-medium text-gray-500 uppercase tracking-wider'>{t('password')}</th>
-                        <th className='px-6 py-3 rtl:text-right ltr:text-left text-xs font-medium text-gray-500 uppercase tracking-wider'>{t('role')}</th>
-                        <th className='px-6 py-3 rtl:text-right ltr:text-left text-xs font-medium text-gray-500 uppercase tracking-wider'>{t('joinedAt')}</th>
-                        <th className='px-6 py-3 rtl:text-right ltr:text-left text-xs font-medium text-gray-500 uppercase tracking-wider'>{t('submissions')}</th>
-                        <th className='px-6 py-3 rtl:text-right ltr:text-left text-xs font-medium text-gray-500 uppercase tracking-wider'>{t('actions')}</th>
+                    <thead className='bg-gradient-to-r from-gray-50 to-gray-100/50'>
+                      <tr>
+                        <th className='px-6 py-4 rtl:text-right ltr:text-left text-xs font-semibold text-gray-700 uppercase tracking-wider'>ID</th>
+                        <th className='px-6 py-4 rtl:text-right ltr:text-left text-xs font-semibold text-gray-700 uppercase tracking-wider'>{t('national_id')}</th>
+                        <th className='px-6 py-4 rtl:text-right ltr:text-left text-xs font-semibold text-gray-700 uppercase tracking-wider'>{t('password')}</th>
+                        <th className='px-6 py-4 rtl:text-right ltr:text-left text-xs font-semibold text-gray-700 uppercase tracking-wider'>{t('role')}</th>
+                        <th className='px-6 py-4 rtl:text-right ltr:text-left text-xs font-semibold text-gray-700 uppercase tracking-wider'>{t('joinedAt')}</th>
+                        <th className='px-6 py-4 rtl:text-right ltr:text-left text-xs font-semibold text-gray-700 uppercase tracking-wider'>{t('submissions')}</th>
+                        <th className='px-6 py-4 rtl:text-right ltr:text-left text-xs font-semibold text-gray-700 uppercase tracking-wider'>{t('actions')}</th>
                       </tr>
                     </thead>
-                    <tbody className='bg-white divide-y divide-gray-200'>
-                      {users.map(user => (
-                        <tr key={user.id} className='hover:bg-gray-50'>
+                    <tbody className='bg-white divide-y divide-gray-100'>
+                      {users.map((user, index) => (
+                        <tr
+                          key={user.id}
+                          className={`transition-all duration-200 ${
+                            index % 2 === 0 ? 'bg-white hover:bg-gray-50/50' : 'bg-gray-50/30 hover:bg-gray-50'
+                          }`}
+                        >
+                          {/* ID Column */}
                           <td className='px-6 py-4 whitespace-nowrap'>
-                            <div className='text-sm font-medium text-gray-900'>{user.id}</div>
+                            <span className='inline-flex items-center justify-center w-8 h-8 rounded-lg bg-gray-100 text-xs font-bold text-gray-700'>
+                              {user.id}
+                            </span>
                           </td>
+
+                          {/* National ID Column */}
                           <td className='px-6 py-4 whitespace-nowrap'>
-                            <div className='flex items-center gap-2 '>
-                              <div className='flex-shrink-0 h-10 w-10 rounded-full bg-indigo-100 flex items-center justify-center text-indigo-600 font-medium uppercase '>
-                                {String(user.email || '')
-                                  .charAt(0)
-                                  .toUpperCase()}
+                            <div className='flex items-center gap-3'>
+                              <div className='flex-shrink-0 w-11 h-11 rounded-xl bg-gradient-to-br from-indigo-500 to-indigo-600 flex items-center justify-center text-white font-bold text-base shadow-md'>
+                                {String(user.email || '').charAt(0).toUpperCase()}
                               </div>
                               <div>
-                                <div className='text-sm font-medium text-gray-900'>{user.email}</div>
+                                <div className='text-sm font-semibold text-gray-900'>{user.email}</div>
                               </div>
                             </div>
                           </td>
 
-                          <td className='px-6 py-4 whitespace-nowrap text-sm text-gray-500'>
-                            <div className='flex items-center space-x-2'>
-                              {visiblePasswords[user.id] ? <span>{visiblePasswords[user.id]}</span> : <span className='text-gray-400 italic'>{t('hidden')}</span>}
-                              <button onClick={() => handleShowPassword(user.id)} className='cursor-pointer hover:scale-[1.1] duration-300 text-blue-500 hover:text-blue-700' title={visiblePasswords[user.id] ? t('hidePassword') : t('showPassword')}>
+                          {/* Password Column */}
+                          <td className='px-6 py-4 whitespace-nowrap'>
+                            <div className='flex items-center gap-2.5'>
+                              {visiblePasswords[user.id] ? (
+                                <span className='text-sm font-mono bg-gray-100 px-3 py-1.5 rounded-lg text-gray-800'>
+                                  {visiblePasswords[user.id]}
+                                </span>
+                              ) : (
+                                <span className='text-sm text-gray-400 italic px-3 py-1.5'>
+                                  {t('hidden')}
+                                </span>
+                              )}
+                              <button
+                                onClick={() => handleShowPassword(user.id)}
+                                className='p-2 rounded-lg hover:bg-blue-50 text-blue-600 hover:text-blue-700 transition-all duration-200 active:scale-95'
+                                title={visiblePasswords[user.id] ? t('hidePassword') : t('showPassword')}
+                              >
                                 {visiblePasswords[user.id] ? <FiEyeOff className='w-4 h-4' /> : <FiEye className='w-4 h-4' />}
                               </button>
                             </div>
                           </td>
 
+                          {/* Role Column */}
                           <td className='px-6 py-4 whitespace-nowrap'>
-                            <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${user.role === 'admin' ? 'bg-purple-100 text-purple-800' : 'bg-blue-100 text-blue-800'}`}>{t(user.role)}</span>
+                            <span
+                              className={`inline-flex items-center px-3 py-1.5 rounded-full text-xs font-semibold ${
+                                user.role === 'admin'
+                                  ? 'bg-purple-100 text-purple-700 border border-purple-200'
+                                  : 'bg-blue-100 text-blue-700 border border-blue-200'
+                              }`}
+                            >
+                              {t(user.role)}
+                            </span>
                           </td>
-                          <td className='px-6 py-4 whitespace-nowrap text-sm text-gray-500'>{new Date(user.created_at).toLocaleDateString()}</td>
+
+                          {/* Joined At Column */}
+                          <td className='px-6 py-4 whitespace-nowrap'>
+                            <div className='flex flex-col'>
+                              <span className='text-sm font-medium text-gray-900'>
+                                {new Date(user.created_at).toLocaleDateString()}
+                              </span>
+                              <span className='text-xs text-gray-500'>
+                                {new Date(user.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                              </span>
+                            </div>
+                          </td>
+
+                          {/* Submissions Column */}
                           <td className='px-6 py-4 whitespace-nowrap'>
                             {user.formSubmissions?.length > 0 ? (
-                              <button onClick={() => setViewSubmission(user.formSubmissions[0])} className='text-indigo-600 hover:text-indigo-900 text-sm cursor-pointer'>
+                              <button
+                                onClick={() => setViewSubmission(user.formSubmissions[0])}
+                                className='inline-flex items-center gap-1.5 text-indigo-600 hover:text-indigo-700 text-sm font-medium hover:underline transition-colors'
+                              >
+                                <FiEye className='w-3.5 h-3.5' />
                                 {t('viewSubmission')}
                               </button>
                             ) : (
-                              <span className='text-sm text-gray-500'>{t('noSubmissionsUser')}</span>
+                              <span className='text-sm text-gray-400'>{t('noSubmissionsUser')}</span>
                             )}
                           </td>
-                          <td className='px-6 py-4 whitespace-nowrap text-sm text-gray-500 space-x-2'>
-                            <button
-                              onClick={() => {
-                                setEditingUser(user);
-                                resetUserForm({
-                                  name: user.email,
-                                  email: user.email,
-                                  role: user.role,
-                                });
-                                setShowEditUserModal(true);
-                              }}
-                              className='text-indigo-600 hover:text-indigo-900 cursor-pointer'
-                              title={t('edit')}>
-                              <FiEdit2 className='h-4 w-4' />
-                            </button>
-                            <button onClick={() => setShowShareModal(user)} className='text-green-600 hover:text-green-900 cursor-pointer' title={t('shareCredentials')}>
-                              <FiShare2 className='h-4 w-4' />
-                            </button>
-                            <button onClick={() => setShowDeleteModal({ show: true, id: user.id, type: 'user' })} className='text-red-600 hover:text-red-900 cursor-pointer' title={t('delete')}>
-                              <FiTrash2 className='h-4 w-4' />
-                            </button>
-                          </td>
+
+                          {/* Actions Column */}
+                           <td className='px-6 py-4 whitespace-nowrap'>
+  <div className='flex items-center gap-2'>
+    <button
+      onClick={() => {
+        setEditingUser(user);
+        resetUserForm({
+          name: user.email,
+          email: user.email,
+          role: user.role,
+        });
+        setShowEditUserModal(true);
+      }}
+      className='group relative p-2.5 rounded-xl bg-indigo-100 text-indigo-700 hover:bg-indigo-600 hover:text-white shadow-sm hover:shadow-lg hover:shadow-indigo-200 transition-all duration-200 active:scale-95'
+      title={t('edit')}
+    >
+      <FiEdit2 className='h-4 w-4 group-hover:rotate-12 transition-transform' />
+    </button>
+    <button
+      onClick={() => setShowShareModal(user)}
+      className='group relative p-2.5 rounded-xl bg-emerald-100 text-emerald-700 hover:bg-emerald-600 hover:text-white shadow-sm hover:shadow-lg hover:shadow-emerald-200 transition-all duration-200 active:scale-95'
+      title={t('shareCredentials')}
+    >
+      <FiShare2 className='h-4 w-4 group-hover:rotate-12 transition-transform' />
+    </button>
+    <button
+      onClick={() => setShowDeleteModal({ show: true, id: user.id, type: 'user' })}
+      className='group relative p-2.5 rounded-xl bg-rose-100 text-rose-700 hover:bg-rose-600 hover:text-white shadow-sm hover:shadow-lg hover:shadow-rose-200 transition-all duration-200 active:scale-95'
+      title={t('delete')}
+    >
+      <FiTrash2 className='h-4 w-4 group-hover:rotate-12 transition-transform' />
+    </button>
+  </div>
+</td>
+
+
+
+
+													
                         </tr>
                       ))}
                     </tbody>
                   </table>
                 </div>
 
-                {/* Pagination */}
-                <div dir='ltr' className='flex items-center justify-center mt-8 space-x-1'>
-                  <button onClick={() => setCurrentUserPage(prev => Math.max(prev - 1, 1))} disabled={currentUserPage === 1} className='p-2 border border-gray-300 !rounded-full w-[30px] h-[30px] flex items-center justify-center text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50'>
+                {/* Enhanced Pagination */}
+                <div dir='ltr' className='flex items-center justify-center mt-8 gap-2'>
+                  <button
+                    onClick={() => setCurrentUserPage(prev => Math.max(prev - 1, 1))}
+                    disabled={currentUserPage === 1}
+                    className='inline-flex items-center justify-center w-9 h-9 rounded-lg border-2 border-gray-200 text-gray-700 bg-white hover:bg-gray-50 hover:border-gray-300 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 shadow-sm active:scale-95'
+                  >
                     <FiChevronLeft className='h-4 w-4' />
                   </button>
 
-                  {Array.from({ length: Math.min(5, localTotalPages) }, (_, i) => {
-                    let pageNum;
-                    if (localTotalPages <= 5) {
-                      pageNum = i + 1;
-                    } else if (currentUserPage <= 3) {
-                      pageNum = i + 1;
-                    } else if (currentUserPage >= localTotalPages - 2) {
-                      pageNum = localTotalPages - 4 + i;
-                    } else {
-                      pageNum = currentUserPage - 2 + i;
-                    }
-                    return (
-                      <button key={pageNum} onClick={() => setCurrentUserPage(pageNum)} className={`px-3 py-1 !rounded-full w-[30px] h-[30px] flex items-center justify-center text-sm ${currentUserPage === pageNum ? 'bg-indigo-600 text-white' : 'bg-white text-gray-700 hover:bg-gray-100'}`}>
-                        {pageNum}
-                      </button>
-                    );
-                  })}
+                  <div className='flex items-center gap-1.5'>
+                    {Array.from({ length: Math.min(5, localTotalPages) }, (_, i) => {
+                      let pageNum;
+                      if (localTotalPages <= 5) {
+                        pageNum = i + 1;
+                      } else if (currentUserPage <= 3) {
+                        pageNum = i + 1;
+                      } else if (currentUserPage >= localTotalPages - 2) {
+                        pageNum = localTotalPages - 4 + i;
+                      } else {
+                        pageNum = currentUserPage - 2 + i;
+                      }
+                      return (
+                        <button
+                          key={pageNum}
+                          onClick={() => setCurrentUserPage(pageNum)}
+                          className={`inline-flex items-center justify-center w-9 h-9 rounded-lg text-sm font-medium transition-all duration-200 shadow-sm active:scale-95 ${
+                            currentUserPage === pageNum
+                              ? 'bg-indigo-600 text-white shadow-indigo-200'
+                              : 'bg-white text-gray-700 border-2 border-gray-200 hover:bg-gray-50 hover:border-gray-300'
+                          }`}
+                        >
+                          {pageNum}
+                        </button>
+                      );
+                    })}
+                  </div>
 
-                  <button onClick={() => setCurrentUserPage(prev => Math.min(prev + 1, localTotalPages))} disabled={currentUserPage === localTotalPages} className='p-2 border border-gray-300 !rounded-full w-[30px] h-[30px] flex items-center justify-center text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50'>
+                  <button
+                    onClick={() => setCurrentUserPage(prev => Math.min(prev + 1, localTotalPages))}
+                    disabled={currentUserPage === localTotalPages}
+                    className='inline-flex items-center justify-center w-9 h-9 rounded-lg border-2 border-gray-200 text-gray-700 bg-white hover:bg-gray-50 hover:border-gray-300 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 shadow-sm active:scale-95'
+                  >
                     <FiChevronRight className='h-4 w-4' />
                   </button>
                 </div>
               </>
             ) : (
-              <div className='text-center py-8 text-gray-500'>{t('noUsers')}</div>
+              <div className='flex flex-col items-center justify-center py-16'>
+                <div className='p-4 bg-gray-100 rounded-full mb-4'>
+                  <FaUser className='w-8 h-8 text-gray-400' />
+                </div>
+                <p className='text-gray-600 font-medium mb-1'>{t('noUsers')}</p>
+                <p className='text-sm text-gray-400'>Create your first user to get started</p>
+              </div>
             )}
           </div>
         )}
       </div>
 
-      {/* NEW: Export Modal */}
+      {/* Enhanced Export Modal */}
       {showExportModal && (
-        <div className='fixed inset-0 z-50 flex items-center justify-center bg-black/40'>
-          <div className='bg-white rounded-xl shadow-lg w-full max-w-md p-6'>
-            <h3 className='text-lg font-semibold mb-2'>{t('exportExcel') || 'Export CSV'}</h3>
-            <p className='text-sm text-gray-500 mb-4'>{t?.('exportHint') || 'Set how many users to include. Current filters (search) will be applied.'}</p>
+        <div className='fixed inset-0 z-50 flex items-center justify-center p-4 animate-fadeIn'>
+          {/* Backdrop with blur */}
+          <button
+            className='absolute inset-0 bg-black/50 backdrop-blur-sm transition-opacity'
+            onClick={() => setShowExportModal(false)}
+            aria-label='Close'
+          />
 
-            <div className='space-y-3'>
-              <label className='block text-sm font-medium text-gray-700'>{t?.('limit') || 'Limit'}</label>
-              <input type='number' min={1} value={exportLimit} onChange={e => setExportLimit(Math.max(1, Number(e.target.value) || 1))} className='w-full rounded-lg border border-gray-200 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-200 focus:border-indigo-300' />
+          {/* Modal */}
+          <div className='relative w-full max-w-md rounded-2xl bg-white shadow-2xl transform transition-all animate-scaleIn'>
+            {/* Header with icon */}
+            <div className='p-6 pb-4'>
+              <div className='flex items-start gap-4'>
+                <div className='flex-shrink-0 w-12 h-12 rounded-xl bg-emerald-100 flex items-center justify-center'>
+                  <FiDownload className='w-6 h-6 text-emerald-600' />
+                </div>
+                <div className='flex-1'>
+                  <h3 className='text-lg font-bold text-gray-900'>{t('exportExcel') || 'Export CSV'}</h3>
+                  <p className='mt-2 text-sm text-gray-600 leading-relaxed'>
+                    {t?.('exportHint') || 'Set how many users to include. Current filters (search) will be applied.'}
+                  </p>
+                </div>
+              </div>
 
-              <div className='text-xs text-gray-500'>
-                {t?.('currentSearch') || 'Current search'}: <span className='font-mono'>{debouncedSearch || t?.('none') || 'none'}</span>
+              <div className='mt-6 space-y-4'>
+                <div>
+                  <label className='block text-sm font-semibold text-gray-700 mb-2'>
+                    {t?.('limit') || 'Limit'}
+                  </label>
+                  <input
+                    type='number'
+                    min={1}
+                    value={exportLimit}
+                    onChange={e => setExportLimit(Math.max(1, Number(e.target.value) || 1))}
+                    className='w-full rounded-xl border-2 border-gray-200 px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all'
+                  />
+                </div>
+
+                <div className='p-3 bg-gray-50 rounded-xl border border-gray-200'>
+                  <div className='text-xs font-medium text-gray-600 mb-1'>
+                    {t?.('currentSearch') || 'Current search'}:
+                  </div>
+                  <div className='text-sm font-mono text-gray-900'>
+                    {debouncedSearch || <span className='text-gray-400 italic'>{t?.('none') || 'none'}</span>}
+                  </div>
+                </div>
               </div>
             </div>
 
-            <div className='mt-6 flex items-center justify-end gap-2'>
-              <button onClick={() => setShowExportModal(false)} className='px-4 py-2 rounded-lg text-sm border border-gray-200 hover:bg-gray-50'>
+            {/* Actions */}
+            <div className='px-6 py-4 bg-gray-50 rounded-b-2xl flex items-center justify-end gap-3'>
+              <button
+                onClick={() => setShowExportModal(false)}
+                className='px-4 py-2.5 rounded-lg text-sm font-medium text-gray-700 hover:bg-white border-2 border-gray-200 transition-all active:scale-95'
+              >
                 {t?.('cancel') || 'Cancel'}
               </button>
-              <button onClick={handleExportCSV} className='px-4 py-2 rounded-lg text-sm bg-green-600 text-white hover:bg-green-700'>
+
+              <button
+                onClick={handleExportCSV}
+                className='px-4 py-2.5 rounded-lg bg-emerald-600 text-sm font-semibold text-white hover:bg-emerald-700 shadow-md hover:shadow-lg transition-all duration-200 active:scale-95 min-w-[100px]'
+              >
                 {t?.('export') || 'Export'}
               </button>
             </div>
