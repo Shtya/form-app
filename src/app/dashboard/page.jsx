@@ -1668,7 +1668,7 @@ export default function DashboardPage() {
 	const exportToExcel = async () => {
 		try {
 			setIsExporting(true);
-			const response = await api.get(`/form-submissions?${queryParams}`);
+			const response = await api.get(`/form-submissions?limit=100000`);
 
 			let dataToExport = response.data.data;
 
