@@ -810,7 +810,7 @@ export default function FormSubmissionPage() {
 					<div className='flex flex-col items-start gap-0 leading-tight'>
 						<h1 className='text-2xl font-bold text-gray-800'>{t.header.title}</h1>
 						<div className='text-xs text-gray-600 flex items-center gap-1'>
-							{t.header.welcome},{' '}
+							{t.header.welcome},
 							<span className='text-sm font-semibold text-indigo-600 capitalize'>{user?.name}</span>
 						</div>
 					</div>

@@ -36,17 +36,17 @@ export async function middleware(request) {
     const { payload: decoded } = await jwtVerify(user.accessToken, JWT_SECRET);
 
     if (pathname === '/') {
-      if (decoded.role === 'admin' || decoded.role === 'supervisor') {
+      if (['admin', 'supervisor', 'rpg_admin'].includes(decoded.role)) {
         return NextResponse.redirect(new URL('/dashboard', request.url));
       } else if (decoded.role === 'user') {
         return NextResponse.redirect(new URL('/form-submission', request.url));
       } else {
-        return NextResponse.redirect(new URL('/login', request.url)); // دور غير معروف
+        return NextResponse.redirect(new URL('/login', request.url));
       }
     }
 
-    // Allow both admin and supervisor to access dashboard
-    if (pathname.startsWith('/dashboard') && !['admin', 'supervisor'].includes(decoded.role)) {
+    // Allow admin, supervisor, and rpg_admin to access dashboard
+    if (pathname.startsWith('/dashboard') && !['admin', 'supervisor', 'rpg_admin'].includes(decoded.role)) {
       return NextResponse.redirect(new URL('/form-submission', request.url));
     }
 
