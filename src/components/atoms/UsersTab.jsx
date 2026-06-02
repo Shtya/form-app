@@ -224,7 +224,7 @@ const UsersTab = ({ handleGeneratePassword, projects, forms = [], t, setUsers, u
                     <span className='text-indigo-600 font-semibold'>
                       {typeof totalCount === 'number' ? totalCount : users.length}
                     </span>
-                    {' '}{t('registeredUsers')}
+                    {t('registeredUsers')}
                   </p>
                 </div>
               </div>
