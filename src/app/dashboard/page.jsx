@@ -513,7 +513,7 @@ const userSchema = yup.object().shape({
 	projectId: yup.number().typeError('Project ID must be a number').required('Project ID is required'),
 	projectName: yup.string().optional(), // Added Project Name
 	password: yup.string().min(6, 'Password must be at least 6 characters').optional(),
-	role: yup.string().oneOf(['admin', 'user', 'supervisor'], 'Invalid role').required('Role is required'),
+	role: yup.string().oneOf(['admin', 'user', 'supervisor', 'rpg_admin'], 'Invalid role').required('Role is required'),
 	formId: yup
 		.number()
 		.typeError('Form ID must be a number')
@@ -919,8 +919,10 @@ export default function DashboardPage() {
 		localStorage.setItem('adminActiveTab', activeTab);
 	}, [activeTab]);
 
+	const isAdminLike = user?.role === 'admin' || user?.role === 'rpg_admin';
+
 	useEffect(() => {
-		if (!authLoading && user?.role === 'admin') {
+		if (!authLoading && isAdminLike) {
 			localStorage.setItem('adminActiveTab', activeTab);
 			fetchData();
 		}
@@ -1000,17 +1002,26 @@ export default function DashboardPage() {
 
 
 	const [clients, setClients] = useState([]);
+
+	const fetchClientsForFilter = async () => {
+		try {
+			const res = await api.get('/projects?limit=10000');
+			setClients(res.data?.data || res.data || []);
+		} catch (error) {
+			console.error('Failed to fetch clients for filter:', error);
+		}
+	};
+
 	useEffect(() => {
-		const fetchClientsForFilter = async () => {
-			try {
-				const res = await api.get('/projects?limit=10000');
-				setClients(res.data?.data || res.data || []);
-			} catch (error) {
-				console.error('Failed to fetch clients for filter:', error);
-			}
-		};
 		fetchClientsForFilter();
 	}, []);
+
+	// Re-fetch projects list whenever the users tab is opened
+	useEffect(() => {
+		if (activeTab === 'users') {
+			fetchClientsForFilter();
+		}
+	}, [activeTab]);
 
 	useEffect(() => {
 		fetchData();
@@ -1172,11 +1183,10 @@ export default function DashboardPage() {
 
 	const handleCreateUser = async userData => {
 		try {
-			// Find selected project to get clientName
-			const selectedProject = projects.find(p => String(p.id) === String(userData.projectId));
+			const selectedProject = clients.find(p => String(p.id) === String(userData.projectId));
 			const payload = {
 				...userData,
-				projectName: selectedProject ? selectedProject.clientName : undefined
+				projectName: selectedProject ? selectedProject.name : undefined
 			};
 
 			const response = await api.post('/auth/create-user', payload);
@@ -2942,7 +2952,7 @@ export default function DashboardPage() {
 
 				{activeTab === 'users' && <UsersTab handleGeneratePassword={handleGeneratePassword} setUsers={setUsers} projects={projects} forms={forms} t={t} users={users} isLoading={isLoading} visiblePasswords={visiblePasswords} handleShowPassword={handleShowPassword} setShowNewUserModal={setShowNewUserModal} setEditingUser={setEditingUser} resetUserForm={resetUserForm} setShowEditUserModal={setShowEditUserModal} setShowShareModal={setShowShareModal} setShowDeleteModal={setShowDeleteModal} setViewSubmission={setViewSubmission} currentUserPage={currentUserPage} setCurrentUserPage={setCurrentUserPage} totalUserPages={totalUserPages} />}
 
-				{activeTab === 'projects' && <ProjectsTab user={user} t={t} />}
+				{activeTab === 'projects' && <ProjectsTab user={user} t={t} onProjectsChanged={fetchClientsForFilter} />}
 
 				{activeTab === 'employeeRequests' && <EmployeeRequestsTab language={language} t={t} />}
 
@@ -3181,9 +3191,9 @@ export default function DashboardPage() {
 								{...registerUser('projectId')}
 							>
 								<option value=''>-- {t('select_project')} --</option>
-								{projects.map(project => (
+								{clients.map(project => (
 									<option key={project.id} value={project.id}>
-										{project.clientName}
+										{project.name}
 									</option>
 								))}
 							</select>
@@ -3286,9 +3296,9 @@ export default function DashboardPage() {
 							</label>
 							<select id='user-projectId' className={`mt-1 block w-full border ${userErrors.projectId ? 'border-red-300' : 'border-gray-300'} rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500`} {...registerUser('projectId')}>
 								<option value=''>-- {t('select_project')} --</option>
-								{projects.map(project => (
+								{clients.map(project => (
 									<option key={project.id} value={project.id}>
-										{project.clientName}
+										{project.name}
 									</option>
 								))}
 							</select>

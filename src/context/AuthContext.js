@@ -47,7 +47,7 @@ export function AuthProvider({ children }) {
         },
         body: JSON.stringify(response.data),
       });
-      if (response.data.role === 'admin') {
+      if (response.data.role === 'admin' || response.data.role === 'rpg_admin') {
         router.push('/dashboard');
       } else {
         router.push('/form-submission');
@@ -56,7 +56,6 @@ export function AuthProvider({ children }) {
       return response.data;
     } catch (error) {
       const errorMessage = error.response?.data?.message || 'Login failed';
-      toast.error(errorMessage);
       throw errorMessage;
     }
   };

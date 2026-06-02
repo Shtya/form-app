@@ -144,7 +144,7 @@ function renderValueAsText(value) {
 	return value.toString();
 }
 
-export default function ProjectsTab({ user, t }) {
+export default function ProjectsTab({ user, t, onProjectsChanged }) {
 	const [projects, setProjects] = useState([]);
 	const [loadingpage, setLoadingpage] = useState(true);
 	const [selectedProjectId, setSelectedProjectId] = useState(null);
@@ -203,6 +203,7 @@ export default function ProjectsTab({ user, t }) {
 		try {
 			await api.delete(`/projects/${projectToDelete}`);
 			fetchProjects();
+			onProjectsChanged?.();
 			if (selectedProjectId === projectToDelete) {
 				setUsers([]);
 				setSelectedProjectId(null);
@@ -221,6 +222,7 @@ export default function ProjectsTab({ user, t }) {
 			await api.patch(`/projects/${id}`, { name });
 			setEditingId(null);
 			fetchProjects();
+			onProjectsChanged?.();
 			toast.success(t('projectRenamed'));
 		} catch (error) {
 			toast.error(error?.response?.data?.message || t('renamingProject'));
@@ -233,6 +235,7 @@ export default function ProjectsTab({ user, t }) {
 			reset();
 			setShowNewProjectModal(false);
 			fetchProjects();
+			onProjectsChanged?.();
 			toast.success(t('projectCreated'));
 		} catch (error) {
 			toast.error(error?.response?.data?.message || t('creatingProject'));
