@@ -1992,7 +1992,7 @@ export default function DashboardPage() {
 									</td>
 
 									<td className='px-6 py-4 whitespace-nowrap text-sm text-gray-500'>
-										{user?.role === 'admin' && !submission.employeeId && (
+										{user?.role === 'admin' && (
 											<button
 												onClick={() => resendSubmissionToCrm(submission.id)}
 												className='mr-3 text-indigo-600 hover:text-indigo-900 cursor-pointer'
