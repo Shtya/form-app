@@ -4,7 +4,7 @@ import { useEffect, useState, useRef } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import api, { baseImg } from '../../utils/api';
 import { DragDropContext, Droppable, Draggable } from '@hello-pangea/dnd';
-import { FiTrash2, FiEdit2, FiPlus, FiCheck, FiEye, FiUser, FiFileText, FiList, FiDownload, FiChevronLeft, FiChevronRight, FiEdit3, FiCircle, FiMaximize, FiUpload, FiCopy, FiFile } from 'react-icons/fi';
+import { FiTrash2, FiEdit2, FiPlus, FiCheck, FiEye, FiUser, FiFileText, FiList, FiDownload, FiChevronLeft, FiChevronRight, FiEdit3, FiCircle, FiMaximize, FiUpload, FiCopy, FiFile, FiRefreshCw } from 'react-icons/fi';
 import { FaAsterisk, FaEye, FaGripVertical, FaUser } from 'react-icons/fa6';
 import * as XLSX from 'xlsx';
 import { useForm } from 'react-hook-form';
@@ -1251,6 +1251,16 @@ export default function DashboardPage() {
 		}
 	};
 
+	const resendSubmissionToCrm = async submissionId => {
+		try {
+			await api.post(`/form-submissions/${submissionId}/resend-crm`);
+			toast.success('Submission sent to CRM successfully');
+			fetchData();
+		} catch (error) {
+			toast.error(error.response?.data?.message || 'Failed to resend submission to CRM');
+		}
+	};
+
 	const toggleFormActive = async (formId, isActive) => {
 		try {
 			const updatedForms = forms.map(form => ({
@@ -1982,6 +1992,15 @@ export default function DashboardPage() {
 									</td>
 
 									<td className='px-6 py-4 whitespace-nowrap text-sm text-gray-500'>
+										{user?.role === 'admin' && !submission.employeeId && (
+											<button
+												onClick={() => resendSubmissionToCrm(submission.id)}
+												className='mr-3 text-indigo-600 hover:text-indigo-900 cursor-pointer'
+												title='Resend to CRM'
+											>
+												<FiRefreshCw className='h-4 w-4' />
+											</button>
+										)}
 										<button
 											onClick={() => requestDeleteSubmission(submission.id)}
 
